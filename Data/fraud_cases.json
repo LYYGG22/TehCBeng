@@ -1,0 +1,4 @@
+[
+  {"id": "FC001", "text": "Case: Customer reported unauthorized $2,500 transfer to new payee added same day. Investigation found device fingerprint mismatch. Resolution: Reversed, account locked."},
+  {"id": "FC002", "text": "Case: Multiple small transactions under $50 within 10 minutes to different merchants, flagged as card testing pattern. Resolution: Card frozen pending verification."}
+]
