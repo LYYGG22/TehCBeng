@@ -79,22 +79,26 @@ function seedData(PDO $db) {
 
     $cases = [
         // Account takeover (5)
-        ['FC001', 'Unauthorized transfer to new payee', 'Under Investigation', 'High', 'Account takeover', '2026-08-14', null, 'Customer reported unauthorized $2,500 transfer to new payee added same day. Investigation found device fingerprint mismatch. Resolution: Reversed, account locked.', $atTrend, $atSuggestion, 87],
+        ['FC001', 'Unauthorized transfer to new payee', 'Open', 'High', 'Account takeover', '2026-08-14', null, 'Customer reported unauthorized $2,500 transfer to new payee added same day. Investigation found device fingerprint mismatch. Resolution: Reversed, account locked.', $atTrend, $atSuggestion, 87],
         ['FC003', 'New payee then same-day large transfer', 'Resolved', 'High', 'Account takeover', '2026-08-05', '2026-08-08', 'Customer account showed a new payee added at 9:02am followed by a $4,100 transfer at 9:14am. Device fingerprint did not match prior sessions. Resolution: Reversed, customer re-verified.', $atTrend, $atSuggestion, 84],
         ['FC004', 'Password reset followed by payee change', 'Resolved', 'High', 'Account takeover', '2026-07-30', '2026-08-02', 'Password reset via email link, followed within minutes by a payee change and transfer attempt of $6,200. Transfer blocked by OTP policy. Resolution: Account secured, no funds lost.', $atTrend, $atSuggestion, 91],
-        ['FC005', 'Login from new device then payee add', 'Under Investigation', 'Medium', 'Account takeover', '2026-08-13', null, 'Login from a previously unseen device, followed by an attempted payee addition. Session flagged before transfer could be initiated.', $atTrend, $atSuggestion, 76],
+        ['FC005', 'Login from new device then payee add', 'Open', 'Medium', 'Account takeover', '2026-08-13', null, 'Login from a previously unseen device, followed by an attempted payee addition. Session flagged before transfer could be initiated.', $atTrend, $atSuggestion, 76],
         ['FC006', 'Recovery email changed, transfer attempted', 'Resolved', 'High', 'Account takeover', '2026-07-22', '2026-07-25', 'Recovery email changed outside normal hours, followed by a $3,800 transfer attempt to an unfamiliar payee. Resolution: Reversed, recovery email restored.', $atTrend, $atSuggestion, 88],
 
         // Card testing (4)
         ['FC002', 'Card testing pattern detected', 'Resolved', 'Medium', 'Card testing', '2026-08-13', '2026-08-14', 'Card used for 6 authorizations under $2 within 90 seconds across different merchants. Resolution: Card frozen, customer issued new card.', $ctTrend, $ctSuggestion, 82],
         ['FC007', 'Rapid small authorizations across merchants', 'Resolved', 'Medium', 'Card testing', '2026-07-18', '2026-07-19', '9 authorizations between $0.50 and $1.50 across 7 different online merchants within 3 minutes. Resolution: Card blocked, no chargeback needed.', $ctTrend, $ctSuggestion, 85],
         ['FC008', 'Sequential card number attempts', 'Resolved', 'Low', 'Card testing', '2026-07-10', '2026-07-11', 'Multiple declined authorizations using sequentially incremented card numbers from the same merchant terminal. Resolution: Merchant notified, card range monitored.', $ctTrend, $ctSuggestion, 79],
-        ['FC009', 'Small authorizations before large purchase', 'Under Investigation', 'Medium', 'Card testing', '2026-08-11', null, 'Two $1 authorizations followed by an attempted $890 purchase 40 seconds later. Large purchase held pending review.', $ctTrend, $ctSuggestion, 74],
+        ['FC009', 'Small authorizations before large purchase', 'Open', 'Medium', 'Card testing', '2026-08-11', null, 'Two $1 authorizations followed by an attempted $890 purchase 40 seconds later. Large purchase held pending review.', $ctTrend, $ctSuggestion, 74],
 
         // Geo-velocity anomaly (3)
         ['FC010', 'Impossible travel between transactions', 'Resolved', 'High', 'Geo-velocity anomaly', '2026-07-28', '2026-07-30', 'Card used in Kuala Lumpur at 2:00pm and in London at 2:40pm same day. Resolution: Card blocked, customer confirmed only the KL transaction.', $gvTrend, $gvSuggestion, 90],
         ['FC011', 'Cross-country transactions within minutes', 'Resolved', 'Medium', 'Geo-velocity anomaly', '2026-07-15', '2026-07-16', 'Transactions recorded in Singapore and Jakarta 18 minutes apart. Resolution: Confirmed fraud, funds reversed.', $gvTrend, $gvSuggestion, 81],
-        ['FC012', 'Simultaneous authorizations in two countries', 'Under Investigation', 'High', 'Geo-velocity anomaly', '2026-08-15', null, 'Two authorizations recorded within 5 minutes of each other in different countries. Under review for possible card cloning.', $gvTrend, $gvSuggestion, 86],
+        ['FC012', 'Simultaneous authorizations in two countries', 'Open', 'High', 'Geo-velocity anomaly', '2026-08-15', null, 'Two authorizations recorded within 5 minutes of each other in different countries. Under review for possible card cloning.', $gvTrend, $gvSuggestion, 86],
+        ['FC013', 'Device mismatch on high-value merchant transfer', 'Resolved', 'High', 'Account takeover', '2026-08-09', '2026-08-10', 'Customer attempted a $9,400 transfer to a newly added merchant after an unrecognized device login. Resolution: Transfer reversed and device trust reset.', $atTrend, $atSuggestion, 89],
+        ['FC014', 'Password reset followed by duplicate payout attempt', 'Resolved', 'High', 'Account takeover', '2026-07-12', '2026-07-13', 'Password reset was used to add a new payout recipient and submit a $7,150 request. Resolution: Request cancelled and account re-secured.', $atTrend, $atSuggestion, 92],
+        ['FC015', 'Manual review for suspicious cross-border wallet activity', 'Open', 'High', 'Geo-velocity anomaly', '2026-08-17', null, 'Customer used wallet services in two countries within hours and triggered a manual hold on a $5,800 transfer. Pending review for identity verification.', $gvTrend, $gvSuggestion, 84],
+        ['FC016', 'High-value payout attempt from new browser session', 'Open', 'High', 'Account takeover', '2026-08-18', null, 'New browser session, unknown IP, and a pending payout request of $6,900 were flagged before authorization. Case remains open for further verification.', $atTrend, $atSuggestion, 86],
     ];
     foreach ($cases as $c) $case->execute($c);
 
@@ -112,6 +116,10 @@ function seedData(PDO $db) {
         ['FC010', 'POL005'],
         ['FC011', 'POL005'],
         ['FC012', 'POL005'], ['FC012', 'POL003'],
+        ['FC013', 'POL001'], ['FC013', 'POL003'],
+        ['FC014', 'POL001'], ['FC014', 'POL004'],
+        ['FC015', 'POL005'], ['FC015', 'POL003'],
+        ['FC016', 'POL001'], ['FC016', 'POL003'],
     ];
     foreach ($links as $l) $link->execute($l);
 }

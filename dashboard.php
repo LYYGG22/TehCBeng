@@ -12,7 +12,7 @@ $recent = $db->query("
 ")->fetchAll();
 
 $total = $db->query("SELECT COUNT(*) AS c FROM cases")->fetch()['c'];
-$open = $db->query("SELECT COUNT(*) AS c FROM cases WHERE status = 'Under Investigation'")->fetch()['c'];
+$open = $db->query("SELECT COUNT(*) AS c FROM cases WHERE status != 'Resolved'")->fetch()['c'];
 $resolved = $db->query("SELECT COUNT(*) AS c FROM cases WHERE status = 'Resolved'")->fetch()['c'];
 
 jsonRaw([

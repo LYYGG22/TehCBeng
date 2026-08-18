@@ -1,4 +1,8 @@
 [
   {"id": "FC001", "text": "Case: Customer reported unauthorized $2,500 transfer to new payee added same day. Investigation found device fingerprint mismatch. Resolution: Reversed, account locked."},
-  {"id": "FC002", "text": "Case: Multiple small transactions under $50 within 10 minutes to different merchants, flagged as card testing pattern. Resolution: Card frozen pending verification."}
+  {"id": "FC002", "text": "Case: Multiple small transactions under $50 within 10 minutes to different merchants, flagged as card testing pattern. Resolution: Card frozen pending verification."},
+  {"id": "FC003", "text": "Case: Customer attempted a $9,400 transfer after an unrecognized device login. Resolution: Transfer reversed and device trust reset."},
+  {"id": "FC004", "text": "Case: Password reset was used to add a new payout recipient and submit a $7,150 request. Resolution: Request cancelled and account re-secured."},
+  {"id": "FC005", "text": "Case: Customer used wallet services in two countries within hours and triggered a manual hold on a $5,800 transfer. Investigation pending for identity verification."},
+  {"id": "FC006", "text": "Case: New browser session, unknown IP, and a pending payout request of $6,900 were flagged before authorization. Case remains open for verification."}
 ]

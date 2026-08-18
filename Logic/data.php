@@ -40,30 +40,48 @@ function getAllData(): array
     $transactions = json_decode(file_get_contents(__DIR__ . '/../Data/transactions.json'), true);
     $policies = json_decode(file_get_contents(__DIR__ . '/../Data/policies.json'), true);
 
+    $formattedCases = array_map(fn($c) => formatCase($c), $cases);
+    $resolvedCases = count(array_filter($formattedCases, fn($c) => $c['status'] === 'Resolved'));
+    $openCases = count(array_filter($formattedCases, fn($c) => $c['status'] === 'Open'));
+
     $flagged = array_filter($transactions, fn($t) =>
         stripos($t['text'], 'flagged true') !== false
     );
 
     return [
         'stats' => [
-            'total_cases' => count($cases),
-            'open_cases' => count($cases),
-            'resolved_cases' => 0,
+            'total_cases' => count($formattedCases),
+            'open_cases' => $openCases,
+            'resolved_cases' => $resolvedCases,
             'flagged_transactions' => count($flagged),
             'total_transactions' => count($transactions),
             'policies' => count($policies),
         ],
-        'cases' => array_map(fn($c) => formatCase($c), $cases),
+        'cases' => $formattedCases,
         'transactions' => array_map(fn($t) => formatTransaction($t), $transactions),
         'policies' => array_map(fn($p) => formatPolicy($p), $policies),
     ];
 }
 
+function getCaseStatus(string $text): string
+{
+    $isResolved = stripos($text, 'reversed') !== false
+        || stripos($text, 'frozen') !== false
+        || stripos($text, 'blocked') !== false
+        || stripos($text, 'secured') !== false
+        || stripos($text, 'restored') !== false;
+
+    if ($isResolved) {
+        return 'Resolved';
+    }
+
+    return 'Open';
+}
+
 function formatCase(array $item): array
 {
     $text = $item['text'];
-    $status = stripos($text, 'Reversed') !== false || stripos($text, 'frozen') !== false
-        ? 'Resolved' : 'Open';
+    $status = getCaseStatus($text);
     $severity = stripos($text, '$2,500') !== false || stripos($text, 'unauthorized') !== false
         ? 'High' : 'Medium';
 
