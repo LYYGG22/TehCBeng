@@ -112,6 +112,21 @@ function handleSearch(): void
         return;
     }
 
-    $results = retrieveRelevant($query, 10);
+    $docs = retrieveRelevant($query, 10);
+    $results = array_map(function (array $doc) {
+        $type = sourceToType($doc['source']);
+        $formatted = match ($doc['source']) {
+            'fraud_cases' => formatCase($doc),
+            'transactions' => formatTransaction($doc),
+            'policies' => formatPolicy($doc),
+            default => ['id' => $doc['id'], 'summary' => $doc['text']],
+        };
+
+        return array_merge($formatted, [
+            'type' => $type,
+            'text' => $doc['text'],
+        ]);
+    }, $docs);
+
     echo json_encode(['results' => $results]);
 }

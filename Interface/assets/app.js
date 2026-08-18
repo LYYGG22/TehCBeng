@@ -323,6 +323,24 @@ function setupExportReport() {
 	});
 }
 
+function renderSearchResultMeta(result) {
+	if (result.type === "Case") {
+		return `
+			<span class="badge ${badgeClass(result.status, "status")}">${escapeHtml(result.status)}</span>
+			<span class="badge ${badgeClass(result.severity, "severity")}">${escapeHtml(result.severity)}</span>
+			<span class="result-meta-label">${escapeHtml(result.type)}</span>`;
+	}
+	if (result.type === "Transaction") {
+		return `
+			<span class="badge ${badgeClass(result.risk, "risk")}">${escapeHtml(result.risk)} Risk</span>
+			<span class="result-meta-label">$${escapeHtml(String(result.amount))}</span>`;
+	}
+	if (result.type === "Policy") {
+		return `<span class="badge">${escapeHtml(result.category)}</span>`;
+	}
+	return "";
+}
+
 async function searchKnowledge(query) {
 	const container = document.getElementById("searchResults");
 	container.innerHTML = `<div class="empty-state">Searching…</div>`;
@@ -334,6 +352,11 @@ async function searchKnowledge(query) {
 		body: JSON.stringify({ query }),
 	});
 
+	if (res.status === 401) {
+		window.location.href = "login.html";
+		return;
+	}
+
 	const data = await res.json();
 
 	if (!data.results?.length) {
@@ -341,15 +364,36 @@ async function searchKnowledge(query) {
 		return;
 	}
 
-	container.innerHTML = data.results
+	const grouped = { Case: [], Transaction: [], Policy: [] };
+	for (const result of data.results) {
+		if (grouped[result.type]) grouped[result.type].push(result);
+	}
+
+	const sections = [
+		["Case", "Cases"],
+		["Transaction", "Transactions"],
+		["Policy", "Policies"],
+	]
+		.filter(([type]) => grouped[type].length > 0)
 		.map(
-			(r) => `
-		<div class="result-item">
-			<div class="result-id">${escapeHtml(r.id)} · ${escapeHtml(r.source || "document")}</div>
-			<div class="result-text">${escapeHtml(r.text)}</div>
+			([type, label]) => `
+		<div class="search-result-group">
+			<div class="search-result-group-title">${label} (${grouped[type].length})</div>
+			${grouped[type]
+				.map(
+					(r) => `
+			<div class="result-item">
+				<div class="result-id">${escapeHtml(r.id)} · ${escapeHtml(r.type)}</div>
+				<div class="result-meta">${renderSearchResultMeta(r)}</div>
+				<div class="result-text">${escapeHtml(r.summary || r.text)}</div>
+			</div>`
+				)
+				.join("")}
 		</div>`
 		)
 		.join("");
+
+	container.innerHTML = sections;
 }
 
 function setupKnowledgeSearch() {
