@@ -33,6 +33,7 @@ let currentCaseFilter = "all";
 let currentSelectedCaseId = null;
 let chatHistory = [];
 let widgetOpen = false;
+let knowledgeSearchRequestId = 0;
 
 const CHAT_CONTAINERS = {
 	full: { messagesId: "chatbotMessages", welcomeId: "chatbotWelcome", inputId: "chatbotInput", sendId: "chatbotSendBtn" },
@@ -454,6 +455,7 @@ function renderSearchResultMeta(result) {
 
 async function searchKnowledge(query) {
 	const container = document.getElementById("searchResults");
+	const requestId = ++knowledgeSearchRequestId;
 	container.innerHTML = `<div class="empty-state">Searching…</div>`;
 
 	const res = await fetch(`${API_BASE}/data.php?action=search`, {
@@ -469,6 +471,7 @@ async function searchKnowledge(query) {
 	}
 
 	const data = await res.json();
+	if (requestId !== knowledgeSearchRequestId) return;
 
 	if (!data.results?.length) {
 		container.innerHTML = `<div class="empty-state">No results found for "${escapeHtml(query)}"</div>`;
@@ -509,11 +512,19 @@ async function searchKnowledge(query) {
 
 function setupKnowledgeSearch() {
 	const input = document.getElementById("knowledgeSearchInput");
+	const container = document.getElementById("searchResults");
 	const search = () => {
 		const q = input.value.trim();
 		if (q) searchKnowledge(q);
 	};
+	const clearSearch = () => {
+		knowledgeSearchRequestId++;
+		input.value = "";
+		container.innerHTML = `<div class="empty-state">Enter a keyword to search the knowledge base</div>`;
+		input.focus();
+	};
 	document.getElementById("knowledgeSearchBtn").addEventListener("click", search);
+	document.getElementById("knowledgeSearchCancelBtn").addEventListener("click", clearSearch);
 	input.addEventListener("keydown", (e) => {
 		if (e.key === "Enter") search();
 	});

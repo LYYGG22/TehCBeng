@@ -175,7 +175,20 @@ function handleSearch(): void
         return;
     }
 
-    $docs = retrieveRelevant($query, 10);
+    // Search the JSON knowledge-base files directly so case, transaction, and
+    // policy IDs (for example, FC001 or TX001) work as search keywords too.
+    $docs = [];
+    foreach (['fraud_cases', 'transactions', 'policies'] as $source) {
+        $items = json_decode(file_get_contents(__DIR__ . "/../Data/{$source}.json"), true) ?? [];
+        foreach ($items as $item) {
+            $haystack = strtolower(($item['id'] ?? '') . ' ' . ($item['text'] ?? ''));
+            if (str_contains($haystack, strtolower($query))) {
+                $item['source'] = $source;
+                $docs[] = $item;
+            }
+        }
+    }
+
     $results = array_map(function (array $doc) {
         $type = sourceToType($doc['source']);
         $formatted = match ($doc['source']) {
