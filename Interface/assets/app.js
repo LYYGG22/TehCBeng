@@ -901,9 +901,5 @@ document.addEventListener("DOMContentLoaded", async () => {
 	setupExportReport();
 
 	document.getElementById("logoutBtn").addEventListener("click", logout);
-<<<<<<< HEAD
 	document.getElementById("backFromCaseDetailBtn").addEventListener("click", () => navigateTo("cases"));
 });
-=======
-});
->>>>>>> fdabd920bcccf917b1f8a73ddc70954054873c93

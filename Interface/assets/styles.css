@@ -1839,7 +1839,6 @@ body {
 	}
 }
 
-<<<<<<< HEAD
 /* ── Case Detail View ── */
 
 .case-detail-container {
@@ -2019,7 +2018,6 @@ body {
 	color: var(--ih-text);
 }
 
-=======
 /* ── Document Viewer Modal ── */
 
 .doc-modal-overlay {
@@ -2130,4 +2128,3 @@ body {
 	text-align: center;
 	color: var(--ih-muted);
 }
->>>>>>> fdabd920bcccf917b1f8a73ddc70954054873c93
