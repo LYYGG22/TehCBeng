@@ -20,7 +20,7 @@ if (!isset($_SESSION['user'])) {
     exit;
 }
 
-require_once __DIR__ . '/retrieveData.php';
+require_once __DIR__ . '/retrieve_data.php';
 
 $action = $_GET['action'] ?? 'all';
 

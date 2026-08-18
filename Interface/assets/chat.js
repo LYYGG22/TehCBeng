@@ -34,9 +34,28 @@ function escapeHtml(text) {
 	return div.innerHTML;
 }
 
+// Renders bot text as Markdown (bold, lists, etc). Falls back to escaped
+// plain text if the marked.js library failed to load for some reason.
+function renderBotText(text) {
+	if (typeof marked !== "undefined") {
+		return marked.parse(text);
+	}
+	return escapeHtml(text);
+}
+
 function hideWelcome() {
 	const welcome = document.getElementById("welcome");
 	if (welcome) welcome.style.display = "none";
+}
+
+// Pulls a readable label out of a source item, whether it's a plain string
+// or an object like { id, text, source_file, title }.
+function sourceLabel(s) {
+	if (typeof s === "string") return s;
+	if (s && typeof s === "object") {
+		return s.source_file || s.title || s.id || JSON.stringify(s);
+	}
+	return String(s);
 }
 
 function appendMessage(role, text, sources = []) {
@@ -51,14 +70,18 @@ function appendMessage(role, text, sources = []) {
 
 	if (sources.length > 0) {
 		sourcesHtml = `<div class="message-sources">${sources
-			.map((s) => `<span class="source-tag">${escapeHtml(s)}</span>`)
+			.map(
+				(s) => `<span class="source-tag">${escapeHtml(sourceLabel(s))}</span>`,
+			)
 			.join("")}</div>`;
 	}
+
+	const bubbleContent = role === "bot" ? renderBotText(text) : escapeHtml(text);
 
 	msg.innerHTML = `
 		<div class="message-avatar">${avatarLabel}</div>
 		<div class="message-content">
-			<div class="message-bubble">${escapeHtml(text)}</div>
+			<div class="message-bubble">${bubbleContent}</div>
 			${sourcesHtml}
 		</div>
 	`;
@@ -188,6 +211,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	setupInput();
 	setupSuggestions();
 
-	document.getElementById("sendBtn").addEventListener("click", () => sendQuery());
+	document
+		.getElementById("sendBtn")
+		.addEventListener("click", () => sendQuery());
 	document.getElementById("logoutBtn").addEventListener("click", logout);
 });
