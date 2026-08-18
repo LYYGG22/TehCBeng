@@ -2,6 +2,8 @@
 session_start();
 
 header('Content-Type: application/json');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 header('Access-Control-Allow-Origin: http://localhost:8000');
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -78,19 +80,62 @@ function getCaseStatus(string $text): string
     return 'Open';
 }
 
+function getCaseType(string $text): string
+{
+    if (stripos($text, 'card testing') !== false) {
+        return 'Card Testing';
+    }
+
+    if (stripos($text, 'refund') !== false) {
+        return 'Merchant Refund Abuse';
+    }
+
+    if (stripos($text, 'wallet') !== false || stripos($text, 'country') !== false || stripos($text, 'travel') !== false || stripos($text, 'geo') !== false || stripos($text, 'blocked ip') !== false) {
+        return 'Geo-Velocity Anomaly';
+    }
+
+    if (stripos($text, 'device') !== false || stripos($text, 'password reset') !== false || stripos($text, 'new payee') !== false || stripos($text, 'payee') !== false) {
+        return 'Account Takeover';
+    }
+
+    if (stripos($text, 'unauthorized') !== false) {
+        return 'Unauthorized Transfer';
+    }
+
+    return 'Fraud Investigation';
+}
+
+function getCaseSeverity(string $text): string
+{
+    if (preg_match('/\$(\d[\d,]*)/', $text, $matches)) {
+        $amount = (int) str_replace(',', '', $matches[1]);
+        if ($amount >= 2500) {
+            return 'High';
+        }
+    }
+
+    $highRiskKeywords = ['unauthorized', 'refund', 'wallet', 'blocked ip', 'country', 'travel', 'new payee', 'password reset', 'device', 'merchant'];
+    foreach ($highRiskKeywords as $keyword) {
+        if (stripos($text, $keyword) !== false) {
+            return 'High';
+        }
+    }
+
+    return 'Medium';
+}
+
 function formatCase(array $item): array
 {
     $text = $item['text'];
     $status = getCaseStatus($text);
-    $severity = stripos($text, '$2,500') !== false || stripos($text, 'unauthorized') !== false
-        ? 'High' : 'Medium';
+    $severity = getCaseSeverity($text);
 
     return [
         'id' => $item['id'],
         'summary' => $text,
         'status' => $status,
         'severity' => $severity,
-        'type' => stripos($text, 'card testing') !== false ? 'Card Testing' : 'Unauthorized Transfer',
+        'type' => getCaseType($text),
     ];
 }
 

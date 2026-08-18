@@ -78,48 +78,23 @@ function seedData(PDO $db) {
     $gvSuggestion = 'Recommend real-time geo-velocity checks at authorization time and automatic step-up verification when implausible travel distance is detected.';
 
     $cases = [
-        // Account takeover (5)
-        ['FC001', 'Unauthorized transfer to new payee', 'Open', 'High', 'Account takeover', '2026-08-14', null, 'Customer reported unauthorized $2,500 transfer to new payee added same day. Investigation found device fingerprint mismatch. Resolution: Reversed, account locked.', $atTrend, $atSuggestion, 87],
+        ['FC001', 'Unauthorized transfer to new payee', 'Resolved', 'High', 'Account takeover', '2026-08-14', '2026-08-15', 'Customer reported unauthorized $2,500 transfer to new payee added same day. Resolution: Reversed, account locked.', $atTrend, $atSuggestion, 87],
+        ['FC002', 'Card testing pattern detected', 'Resolved', 'Medium', 'Card testing', '2026-08-13', '2026-08-14', 'Multiple small transactions under $50 within 10 minutes to different merchants, flagged as card testing pattern. Resolution: Card frozen pending verification.', $ctTrend, $ctSuggestion, 82],
         ['FC003', 'Rapid merchant refund abuse pattern', 'Resolved', 'High', 'Merchant refund abuse', '2026-08-05', '2026-08-08', 'Three refunds were issued to the same customer profile within 20 minutes after a rapid sequence of high-value purchases from a single merchant. Resolution: Merchant account frozen and refunds reversed.', 'This pattern matches refund abuse where a fraudster quickly cycles high-value orders and claims refunds to monetize stolen card data.', 'Recommend placing merchant accounts under additional review after multiple rapid refund requests and flagging repeat refund patterns across the same device fingerprint.', 84],
-        ['FC004', 'Password reset followed by payee change', 'Resolved', 'High', 'Account takeover', '2026-07-30', '2026-08-02', 'Password reset via email link, followed within minutes by a payee change and transfer attempt of $6,200. Transfer blocked by OTP policy. Resolution: Account secured, no funds lost.', $atTrend, $atSuggestion, 91],
-        ['FC005', 'Login from new device then payee add', 'Open', 'Medium', 'Account takeover', '2026-08-13', null, 'Login from a previously unseen device, followed by an attempted payee addition. Session flagged before transfer could be initiated.', $atTrend, $atSuggestion, 76],
-        ['FC006', 'Wallet top-up from blocked geolocation', 'Resolved', 'High', 'Geo-velocity anomaly', '2026-07-22', '2026-07-25', 'A $5,900 wallet top-up was processed from a device connected to a blocked IP range while the customer was simultaneously at a different country location. Resolution: Funds recovered and account security tightened.', $gvTrend, $gvSuggestion, 88],
-
-        // Card testing (4)
-        ['FC002', 'Card testing pattern detected', 'Resolved', 'Medium', 'Card testing', '2026-08-13', '2026-08-14', 'Card used for 6 authorizations under $2 within 90 seconds across different merchants. Resolution: Card frozen, customer issued new card.', $ctTrend, $ctSuggestion, 82],
-        ['FC007', 'Rapid small authorizations across merchants', 'Resolved', 'Medium', 'Card testing', '2026-07-18', '2026-07-19', '9 authorizations between $0.50 and $1.50 across 7 different online merchants within 3 minutes. Resolution: Card blocked, no chargeback needed.', $ctTrend, $ctSuggestion, 85],
-        ['FC008', 'Sequential card number attempts', 'Resolved', 'Low', 'Card testing', '2026-07-10', '2026-07-11', 'Multiple declined authorizations using sequentially incremented card numbers from the same merchant terminal. Resolution: Merchant notified, card range monitored.', $ctTrend, $ctSuggestion, 79],
-        ['FC009', 'Small authorizations before large purchase', 'Open', 'Medium', 'Card testing', '2026-08-11', null, 'Two $1 authorizations followed by an attempted $890 purchase 40 seconds later. Large purchase held pending review.', $ctTrend, $ctSuggestion, 74],
-
-        // Geo-velocity anomaly (3)
-        ['FC010', 'Impossible travel between transactions', 'Resolved', 'High', 'Geo-velocity anomaly', '2026-07-28', '2026-07-30', 'Card used in Kuala Lumpur at 2:00pm and in London at 2:40pm same day. Resolution: Card blocked, customer confirmed only the KL transaction.', $gvTrend, $gvSuggestion, 90],
-        ['FC011', 'Cross-country transactions within minutes', 'Resolved', 'Medium', 'Geo-velocity anomaly', '2026-07-15', '2026-07-16', 'Transactions recorded in Singapore and Jakarta 18 minutes apart. Resolution: Confirmed fraud, funds reversed.', $gvTrend, $gvSuggestion, 81],
-        ['FC012', 'Simultaneous authorizations in two countries', 'Open', 'High', 'Geo-velocity anomaly', '2026-08-15', null, 'Two authorizations recorded within 5 minutes of each other in different countries. Under review for possible card cloning.', $gvTrend, $gvSuggestion, 86],
-        ['FC013', 'Device mismatch on high-value merchant transfer', 'Resolved', 'High', 'Account takeover', '2026-08-09', '2026-08-10', 'Customer attempted a $9,400 transfer to a newly added merchant after an unrecognized device login. Resolution: Transfer reversed and device trust reset.', $atTrend, $atSuggestion, 89],
-        ['FC014', 'Password reset followed by duplicate payout attempt', 'Resolved', 'High', 'Account takeover', '2026-07-12', '2026-07-13', 'Password reset was used to add a new payout recipient and submit a $7,150 request. Resolution: Request cancelled and account re-secured.', $atTrend, $atSuggestion, 92],
-        ['FC015', 'Manual review for suspicious cross-border wallet activity', 'Open', 'High', 'Geo-velocity anomaly', '2026-08-17', null, 'Customer used wallet services in two countries within hours and triggered a manual hold on a $5,800 transfer. Pending review for identity verification.', $gvTrend, $gvSuggestion, 84],
-        ['FC016', 'High-value payout attempt from new browser session', 'Open', 'High', 'Account takeover', '2026-08-18', null, 'New browser session, unknown IP, and a pending payout request of $6,900 were flagged before authorization. Case remains open for further verification.', $atTrend, $atSuggestion, 86],
+        ['FC004', 'Duplicate payment review', 'Open', 'Medium', 'Payment dispute', '2026-08-17', null, 'Customer reported a $1,850 duplicate charge after a failed top-up request. Open review remains pending before funds are released.', 'This pattern indicates a possible duplicate authorization or failed payment retry that should be reviewed before releasing funds.', 'Recommend cross-checking pending top-ups against prior charges and holding disputed amounts until reconciliation is completed.', 68],
+        ['FC005', 'High-value payout attempt from new browser session', 'Open', 'High', 'Account takeover', '2026-08-18', null, 'New browser session, unknown device fingerprint, and a pending payout request of $6,900 were flagged before authorization. Case remains open for verification.', $atTrend, $atSuggestion, 86],
+        ['FC006', 'Repeated billing error resolved', 'Resolved', 'Medium', 'Billing dispute', '2026-07-22', '2026-07-25', 'Customer reported a $1,400 transfer mismatch after repeated billing errors. Resolution: Funds restored and account review completed.', 'This resembles a billing or settlement issue rather than a compromise, but repeated discrepancies may deserve monitoring.', 'Review failed billing retries and confirm settlement logs before releasing funds on repeated errors.', 71],
     ];
     foreach ($cases as $c) $case->execute($c);
 
     $link = $db->prepare("INSERT INTO case_documents (case_id, doc_id) VALUES (?, ?)");
     $links = [
         ['FC001', 'POL001'], ['FC001', 'POL003'],
-        ['FC003', 'POL004'], ['FC003', 'POL003'],
-        ['FC004', 'POL001'], ['FC004', 'POL004'],
-        ['FC005', 'POL003'],
-        ['FC006', 'POL001'], ['FC006', 'POL004'],
         ['FC002', 'POL002'],
-        ['FC007', 'POL002'],
-        ['FC008', 'POL002'],
-        ['FC009', 'POL002'], ['FC009', 'POL001'],
-        ['FC010', 'POL005'],
-        ['FC011', 'POL005'],
-        ['FC012', 'POL005'], ['FC012', 'POL003'],
-        ['FC013', 'POL001'], ['FC013', 'POL003'],
-        ['FC014', 'POL001'], ['FC014', 'POL004'],
-        ['FC015', 'POL005'], ['FC015', 'POL003'],
-        ['FC016', 'POL001'], ['FC016', 'POL003'],
+        ['FC003', 'POL004'], ['FC003', 'POL003'],
+        ['FC004', 'POL001'],
+        ['FC005', 'POL001'], ['FC005', 'POL003'],
+        ['FC006', 'POL001'],
     ];
     foreach ($links as $l) $link->execute($l);
 }
