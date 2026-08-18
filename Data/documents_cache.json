@@ -1,0 +1,17 @@
+[
+    {
+        "id": "DOC_fraud_handling",
+        "text": "Fraud Handling Procedure\nDocument Version: 1.0 | Effective Date: 17 August 2026\n1. Purpose\nThis procedure provides a simple workflow for identifying, reviewing, documenting, and resolving potentially fraudulent transactions.\n2. Fraud Indicators\nMultiple transactions using unusual payment patterns.\nRepeated failed payment attempts followed by a successful transaction.\nUnexpected changes to customer or payment information.\nTransactions that do not match the customer&#039;s normal activity.\n3. Handling Steps\nDetect: Flag the transaction using system alerts or manual review.\nReview: Check transaction details, account history, timestamps, and supporting evidence.\nRestrict: If necessary, temporarily hold the transaction while the investigation is ongoing.\nEscalate: Send suspicious or high-risk cases to the responsible fraud\/risk team.\nResolve: Approve, reject, refund, or release the transaction based on the investigation.\nRecord: Document the decision, evidence reviewed, and action taken.\n4. Example Case\nTransaction TXN-20260817-003 was flagged after several failed payment attempts followed by a successful payment from a new device. The transaction should be reviewed, supporting evidence collected, and escalated if the activity cannot be verified.\n5. Important Note\nStaff should avoid making assumptions based only on a single indicator. A transaction should be assessed using the available evidence and the organization&#039;s fraud controls.",
+        "source_file": "fraud_handling.docx"
+    },
+    {
+        "id": "DOC_refund_policy",
+        "text": "Refund Policy\nEffective Date: 17 August 2026\n1. Overview\nThis policy explains how customers may request refunds for eligible transactions. Refund requests are reviewed\nbased on the transaction status, payment method, and reason provided.\n2. Eligible Refunds\nA refund may be considered when a transaction was duplicated, incorrectly charged, cancelled before\nfulfillment, or affected by a verified system\/payment error.\n3. Non-Eligible Refunds\nRefunds may be rejected for completed services, unauthorized requests without supporting information, or\nrequests submitted outside the applicable refund period.\n4. Processing Time\nApproved refunds are normally processed within 5\u201310 business days. The time required for the funds to appear\nmay depend on the customer's bank or payment provider.\n5. Refund Request Information\nRequired Information\tExample\nTransaction ID\tTXN-20260817-001\nCustomer Name\tJohn Tan\nReason\tDuplicate payment\nSupporting Evidence\tPayment receipt \/ screenshot\n6. Contact\nCustomers should contact the support team with the transaction ID and relevant evidence when submitting a\nrefund request.",
+        "source_file": "refund_policy.pdf"
+    },
+    {
+        "id": "DOC_transaction_log",
+        "text": "Transaction ID | Date | Customer | Amount (MYR) | Payment Method | Status | Fraud Flag | Remarks\nTXN-20260817-001 | 2026-08-17 | John Tan | 120 | Credit Card | Completed | No | Normal transaction\nTXN-20260817-002 | 2026-08-17 | Alice Lim | 85.5 | Online Banking | Refunded | No | Duplicate payment\nTXN-20260817-003 | 2026-08-17 | Michael Lee | 450 | Credit Card | Under Review | Yes | Multiple failed attempts\nTXN-20260816-004 | 2026-08-16 | Sarah Wong | 210 | E-Wallet | Completed | No | Verified\nTXN-20260816-005 | 2026-08-16 | David Tan | 999 | Credit Card | Blocked | Yes | Unusual activity",
+        "source_file": "transaction_log.xlsx"
+    }
+]

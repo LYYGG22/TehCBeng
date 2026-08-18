@@ -434,6 +434,24 @@ function setupExportReport() {
 	});
 }
 
+function renderSearchResultMeta(result) {
+	if (result.type === "Case") {
+		return `
+			<span class="badge ${badgeClass(result.status, "status")}">${escapeHtml(result.status)}</span>
+			<span class="badge ${badgeClass(result.severity, "severity")}">${escapeHtml(result.severity)}</span>
+			<span class="result-meta-label">${escapeHtml(result.type)}</span>`;
+	}
+	if (result.type === "Transaction") {
+		return `
+			<span class="badge ${badgeClass(result.risk, "risk")}">${escapeHtml(result.risk)} Risk</span>
+			<span class="result-meta-label">$${escapeHtml(String(result.amount))}</span>`;
+	}
+	if (result.type === "Policy") {
+		return `<span class="badge">${escapeHtml(result.category)}</span>`;
+	}
+	return "";
+}
+
 async function searchKnowledge(query) {
 	const container = document.getElementById("searchResults");
 	container.innerHTML = `<div class="empty-state">Searching…</div>`;
@@ -445,6 +463,11 @@ async function searchKnowledge(query) {
 		body: JSON.stringify({ query }),
 	});
 
+	if (res.status === 401) {
+		window.location.href = "login.html";
+		return;
+	}
+
 	const data = await res.json();
 
 	if (!data.results?.length) {
@@ -452,15 +475,36 @@ async function searchKnowledge(query) {
 		return;
 	}
 
-	container.innerHTML = data.results
+	const grouped = { Case: [], Transaction: [], Policy: [] };
+	for (const result of data.results) {
+		if (grouped[result.type]) grouped[result.type].push(result);
+	}
+
+	const sections = [
+		["Case", "Cases"],
+		["Transaction", "Transactions"],
+		["Policy", "Policies"],
+	]
+		.filter(([type]) => grouped[type].length > 0)
 		.map(
-			(r) => `
-		<div class="result-item">
-			<div class="result-id">${escapeHtml(r.id)} · ${escapeHtml(r.source || "document")}</div>
-			<div class="result-text">${escapeHtml(r.text)}</div>
+			([type, label]) => `
+		<div class="search-result-group">
+			<div class="search-result-group-title">${label} (${grouped[type].length})</div>
+			${grouped[type]
+				.map(
+					(r) => `
+			<div class="result-item">
+				<div class="result-id">${escapeHtml(r.id)} · ${escapeHtml(r.type)}</div>
+				<div class="result-meta">${renderSearchResultMeta(r)}</div>
+				<div class="result-text">${escapeHtml(r.summary || r.text)}</div>
+			</div>`
+				)
+				.join("")}
 		</div>`
 		)
 		.join("");
+
+	container.innerHTML = sections;
 }
 
 function setupKnowledgeSearch() {
@@ -480,19 +524,182 @@ function hideWelcome(welcomeId) {
 	if (el) el.style.display = "none";
 }
 
-function buildMessageHtml(role, text, sources = []) {
-	let sourcesHtml = "";
-	if (sources.length > 0) {
-		sourcesHtml = `<div class="message-sources">${sources
-			.map((s) => `<span class="source-tag">${escapeHtml(s)}</span>`)
-			.join("")}</div>`;
+function sourceLabel(source) {
+	if (typeof source === "string") return source;
+	if (source && typeof source === "object") {
+		return source.file_name || source.title || source.id || "Document";
 	}
+	return String(source);
+}
+
+function sourceId(source) {
+	if (typeof source === "string") return source;
+	if (source && typeof source === "object") return source.id || source.title || "";
+	return String(source);
+}
+
+function formatSourceDate(dateStr) {
+	if (!dateStr) return "";
+	const d = new Date(dateStr);
+	if (isNaN(d.getTime())) return "";
+	return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+
+function buildSourceTagsHtml(sources = []) {
+	if (!sources.length) return "";
+	return `<div class="message-sources">${sources
+		.map((source) => {
+			const id = sourceId(source);
+			const label = sourceLabel(source);
+			const confidence = typeof source === "object" ? source.confidence : null;
+			const updated = formatSourceDate(typeof source === "object" ? source.last_updated : null);
+
+			const metaParts = [];
+			if (confidence !== null && confidence !== undefined) {
+				metaParts.push(`<span class="source-tag-confidence">${escapeHtml(String(confidence))}% match</span>`);
+			}
+			if (updated) {
+				metaParts.push(`<span class="source-tag-updated">Updated ${escapeHtml(updated)}</span>`);
+			}
+			const metaHtml = metaParts.length
+				? `<span class="source-tag-meta">${metaParts.join('<span class="source-tag-dot">·</span>')}</span>`
+				: "";
+
+			return `<button type="button" class="source-tag" data-source-id="${escapeHtml(id)}" title="View ${escapeHtml(label)}">
+				<span class="source-tag-label">${escapeHtml(label)}</span>
+				${metaHtml}
+			</button>`;
+		})
+		.join("")}</div>`;
+}
+
+function renderBold(escapedText) {
+	return escapedText.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+
+// Bot answers come back as Markdown, so bullets, numbered steps and headings
+// render as real blocks instead of one long line. The text is escaped first so
+// any raw HTML in the model output is shown, never executed. Falls back to
+// bold-only rendering if marked.js did not load.
+function renderBotText(text) {
+	const escaped = escapeHtml(text);
+	if (typeof marked !== "undefined") {
+		return marked.parse(escaped, { breaks: true, gfm: true });
+	}
+	return renderBold(escaped).replace(/\n/g, "<br>");
+}
+
+function confidenceLevel(confidence) {
+	if (confidence >= 70) return "high";
+	if (confidence >= 40) return "medium";
+	return "low";
+}
+
+// Progress bar shown under a bot answer, reporting how well the retrieved
+// sources matched the question.
+function buildConfidenceHtml(confidence) {
+	if (confidence === null || confidence === undefined || isNaN(confidence)) return "";
+
+	const pct = Math.max(0, Math.min(100, Math.round(confidence)));
+	const level = confidenceLevel(pct);
+
+	return `
+		<div class="answer-confidence answer-confidence-${level}">
+			<div class="answer-confidence-head">
+				<span class="answer-confidence-label">Confidence</span>
+				<span class="answer-confidence-value">${pct}%</span>
+			</div>
+			<div class="answer-confidence-track" role="progressbar" aria-label="Answer confidence"
+				aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100">
+				<div class="answer-confidence-fill" style="width: ${pct}%"></div>
+			</div>
+		</div>`;
+}
+
+function buildMessageHtml(role, text, sources = [], confidence = null) {
+	const isBot = role === "bot";
+	const sourcesHtml = isBot ? buildSourceTagsHtml(sources) : "";
+	const confidenceHtml = isBot ? buildConfidenceHtml(confidence) : "";
+	const bubbleContent = isBot ? renderBotText(text) : escapeHtml(text);
 	return `
 		<div class="message-avatar">${role === "user" ? "You" : "IH"}</div>
 		<div class="message-content">
-			<div class="message-bubble">${escapeHtml(text)}</div>
+			<div class="message-bubble${isBot ? " message-bubble-rich" : ""}">${bubbleContent}</div>
+			${confidenceHtml}
 			${sourcesHtml}
 		</div>`;
+}
+
+async function openDocumentViewer(docId) {
+	const overlay = document.getElementById("docModalOverlay");
+	const titleEl = document.getElementById("docModalTitle");
+	const metaEl = document.getElementById("docModalMeta");
+	const bodyEl = document.getElementById("docModalBody");
+	const openFileBtn = document.getElementById("docModalOpenFile");
+
+	overlay.classList.remove("hidden");
+	titleEl.textContent = "Loading…";
+	metaEl.textContent = "";
+	bodyEl.innerHTML = `<div class="doc-modal-loading">Loading document…</div>`;
+	openFileBtn.classList.add("hidden");
+
+	try {
+		const res = await fetch(
+			`${API_BASE}/document.php?action=view&id=${encodeURIComponent(docId)}`,
+			{ credentials: "include" }
+		);
+		const data = await res.json();
+
+		if (!res.ok) {
+			throw new Error(data.error || "Unable to load document.");
+		}
+
+		titleEl.textContent = data.title;
+		const updated = formatSourceDate(data.last_updated);
+		metaEl.innerHTML = `
+			<span class="badge badge-clear">${escapeHtml(data.category)}</span>
+			<span>${escapeHtml(data.id)}</span>
+			${data.file_name ? `<span>${escapeHtml(data.file_name)}</span>` : ""}
+			${updated ? `<span>Last updated ${escapeHtml(updated)}</span>` : ""}
+		`;
+
+		if (data.preview_type === "pdf" && data.file_url) {
+			bodyEl.innerHTML = `<iframe src="${data.file_url}" title="${escapeHtml(data.title)}"></iframe>`;
+			openFileBtn.href = data.file_url;
+			openFileBtn.classList.remove("hidden");
+		} else {
+			bodyEl.innerHTML = `<div class="doc-modal-text">${escapeHtml(data.text)}</div>`;
+			if (data.file_url) {
+				openFileBtn.href = data.file_url;
+				openFileBtn.classList.remove("hidden");
+			}
+		}
+	} catch (err) {
+		titleEl.textContent = "Document unavailable";
+		metaEl.textContent = docId;
+		bodyEl.innerHTML = `<div class="doc-modal-loading">${escapeHtml(err.message)}</div>`;
+	}
+}
+
+function closeDocumentViewer() {
+	document.getElementById("docModalOverlay").classList.add("hidden");
+}
+
+function setupDocumentViewer() {
+	document.getElementById("docModalClose").addEventListener("click", closeDocumentViewer);
+	document.getElementById("docModalCloseFooter").addEventListener("click", closeDocumentViewer);
+	document.getElementById("docModalOverlay").addEventListener("click", (e) => {
+		if (e.target.id === "docModalOverlay") closeDocumentViewer();
+	});
+
+	document.addEventListener("click", (e) => {
+		const tag = e.target.closest(".source-tag[data-source-id]");
+		if (tag) openDocumentViewer(tag.dataset.sourceId);
+	});
+
+	document.addEventListener("keydown", (e) => {
+		if (e.key === "Escape") closeDocumentViewer();
+	});
 }
 
 function renderChatContainer(containerKey) {
@@ -512,10 +719,10 @@ function renderChatContainer(containerKey) {
 	hideWelcome(cfg.welcomeId);
 	chat.querySelectorAll(".message, .typing-indicator-wrap").forEach((el) => el.remove());
 
-	chatHistory.forEach(({ role, text, sources }) => {
+	chatHistory.forEach(({ role, text, sources, confidence }) => {
 		const msg = document.createElement("div");
 		msg.className = `message ${role}`;
-		msg.innerHTML = buildMessageHtml(role, text, sources);
+		msg.innerHTML = buildMessageHtml(role, text, sources, confidence);
 		chat.appendChild(msg);
 	});
 
@@ -527,8 +734,8 @@ function renderAllChats() {
 	renderChatContainer("widget");
 }
 
-function appendMessage(role, text, sources = []) {
-	chatHistory.push({ role, text, sources });
+function appendMessage(role, text, sources = [], confidence = null) {
+	chatHistory.push({ role, text, sources, confidence });
 	renderAllChats();
 }
 
@@ -592,7 +799,12 @@ async function sendQuery(inputId, sendBtnId) {
 			appendMessage("bot", data.error);
 			return;
 		}
-		appendMessage("bot", data.answer, data.sources_used || []);
+		appendMessage(
+			"bot",
+			data.answer,
+			data.sources_used || [],
+			data.confidence ?? null
+		);
 	} catch {
 		hideTyping();
 		appendMessage("bot", "Failed to reach the server. Please try again.");
@@ -685,8 +897,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 	setupKnowledgeSearch();
 	setupChatbotView();
 	setupFloatingWidget();
+	setupDocumentViewer();
 	setupExportReport();
 
 	document.getElementById("logoutBtn").addEventListener("click", logout);
+<<<<<<< HEAD
 	document.getElementById("backFromCaseDetailBtn").addEventListener("click", () => navigateTo("cases"));
 });
+=======
+});
+>>>>>>> fdabd920bcccf917b1f8a73ddc70954054873c93

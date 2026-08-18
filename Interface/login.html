@@ -11,12 +11,17 @@
 			<div class="login-brand">
 				<div class="brand-content">
 					<div class="brand-logo">
-						<img src="assets/logo.png" alt="IntelliHub" class="brand-logo-img" />
+						<div class="brand-logo-wrap">
+							<img
+								src="assets/logo.png"
+								alt="IntelliHub"
+								class="brand-logo-img"
+							/>
+						</div>
 					</div>
 					<p class="brand-tagline">
-						Your intelligent fraud investigation platform. Analyze
-						transactions, review cases, and access policies — all in one
-						place.
+						Your intelligent fraud investigation platform. Analyze transactions,
+						review cases, and access policies — all in one place.
 					</p>
 					<ul class="brand-features">
 						<li>AI-powered case analysis</li>
@@ -30,14 +35,22 @@
 			<div class="login-form-panel">
 				<div class="login-card">
 					<div class="login-card-logo-wrap">
-						<img src="assets/logo.png" alt="IntelliHub" class="login-card-logo" />
+						<img
+							src="assets/logo.png"
+							alt="IntelliHub"
+							class="login-card-logo"
+						/>
 					</div>
 					<h1>Welcome back</h1>
 					<p class="login-subtitle">
 						Sign in to access the IntelliHub Assistant
 					</p>
 
-					<div id="errorAlert" class="alert alert-error" style="display: none"></div>
+					<div
+						id="errorAlert"
+						class="alert alert-error"
+						style="display: none"
+					></div>
 
 					<form id="loginForm">
 						<div class="form-group">
@@ -77,7 +90,8 @@
 					</form>
 
 					<div class="login-footer">
-						Demo: admin@intellihub.com / admin123
+						Demo — Manager: manager@intellihub.com / manager123<br />
+						Demo — Staff: staff@intellihub.com / staff123
 					</div>
 				</div>
 			</div>
@@ -98,44 +112,46 @@
 
 			checkSession();
 
-			document.getElementById("loginForm").addEventListener("submit", async (e) => {
-				e.preventDefault();
+			document
+				.getElementById("loginForm")
+				.addEventListener("submit", async (e) => {
+					e.preventDefault();
 
-				const btn = document.getElementById("loginBtn");
-				const errorAlert = document.getElementById("errorAlert");
-				errorAlert.style.display = "none";
+					const btn = document.getElementById("loginBtn");
+					const errorAlert = document.getElementById("errorAlert");
+					errorAlert.style.display = "none";
 
-				btn.disabled = true;
-				btn.textContent = "Signing in…";
+					btn.disabled = true;
+					btn.textContent = "Signing in…";
 
-				try {
-					const res = await fetch(`${API}?action=login`, {
-						method: "POST",
-						credentials: "include",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({
-							email: document.getElementById("email").value,
-							password: document.getElementById("password").value,
-						}),
-					});
+					try {
+						const res = await fetch(`${API}?action=login`, {
+							method: "POST",
+							credentials: "include",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({
+								email: document.getElementById("email").value,
+								password: document.getElementById("password").value,
+							}),
+						});
 
-					const data = await res.json();
+						const data = await res.json();
 
-					if (!res.ok) {
-						errorAlert.textContent = data.error || "Login failed.";
+						if (!res.ok) {
+							errorAlert.textContent = data.error || "Login failed.";
+							errorAlert.style.display = "block";
+							return;
+						}
+
+						window.location.href = "dashboard.html";
+					} catch {
+						errorAlert.textContent = "Unable to connect to server.";
 						errorAlert.style.display = "block";
-						return;
+					} finally {
+						btn.disabled = false;
+						btn.textContent = "Sign in";
 					}
-
-					window.location.href = "dashboard.html";
-				} catch {
-					errorAlert.textContent = "Unable to connect to server.";
-					errorAlert.style.display = "block";
-				} finally {
-					btn.disabled = false;
-					btn.textContent = "Sign in";
-				}
-			});
+				});
 		</script>
 	</body>
 </html>

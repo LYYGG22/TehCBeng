@@ -21,7 +21,7 @@ if (!isset($_SESSION['user'])) {
     exit;
 }
 
-require_once __DIR__ . '/retrieveData.php';
+require_once __DIR__ . '/retrieve_data.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
 $userQuery = $data['query'] ?? '';
@@ -29,21 +29,17 @@ $userQuery = $data['query'] ?? '';
 $relevantDocs = retrieveRelevant($userQuery, 3);
 
 if (empty($relevantDocs)) {
-    echo json_encode([
-        'answer' => "I couldn't find any relevant cases, policies, or transactions matching your question.",
-        'sources_used' => []
-    ]);
-    exit;
-}
-
-$context = "";
-foreach ($relevantDocs as $doc) {
-    $context .= "- [{$doc['id']}] {$doc['text']}\n";
+    $context = "No specific matching cases, policies, transactions, or documents were found in the database for this question.";
+} else {
+    $context = "";
+    foreach ($relevantDocs as $doc) {
+        $context .= "- [{$doc['id']}] {$doc['text']}\n";
+    }
 }
 
 $apiKey = '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';
 
-$prompt = "You are IntelliHub, a fraud investigation assistant. Use the following retrieved context to answer the user's question. Reference specific case/policy/transaction IDs where relevant.\n\nContext:\n$context\n\nUser question: $userQuery\n\nAnswer concisely.";
+$prompt = "You are IntelliHub, a fraud investigation assistant. Use the following retrieved context to answer the user's question. Reference specific case/policy/transaction IDs where relevant.\n\nContext:\n$context\n\nUser question: $userQuery\n\nAnswer concisely. Format the answer in Markdown so it is easy to scan: use short paragraphs, '- ' bullet points for lists of findings or steps, numbered lists for ordered procedures, and **bold** for IDs and key terms. Do not put everything in one long line.";
 
 $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -72,7 +68,30 @@ curl_close($ch);
 $result = json_decode($response, true);
 $answer = $result['choices'][0]['message']['content'] ?? 'Error retrieving answer.';
 
+$sourcesUsed = array_map(function ($d) {
+    $ref = [
+        'id' => $d['id'],
+        'title' => $d['source_file'] ?? $d['id'],
+        'type' => $d['source'] ?? 'record',
+        'confidence' => $d['confidence'] ?? null,
+        'last_updated' => $d['last_updated'] ?? null,
+    ];
+    if (!empty($d['source_file'])) {
+        $ref['file_name'] = $d['source_file'];
+    }
+    return $ref;
+}, $relevantDocs);
+
+// Overall answer confidence = the best match among the documents that were
+// actually fed to the model. No documents retrieved means no grounding at all.
+$docConfidences = array_filter(
+    array_map(fn($d) => $d['confidence'] ?? null, $relevantDocs),
+    fn($c) => $c !== null
+);
+$confidence = empty($docConfidences) ? 0 : (int) max($docConfidences);
+
 echo json_encode([
     'answer' => $answer,
-    'sources_used' => array_map(fn($d) => $d['id'], $relevantDocs)
+    'confidence' => $confidence,
+    'sources_used' => $sourcesUsed
 ]);
