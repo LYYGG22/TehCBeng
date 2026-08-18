@@ -13,6 +13,10 @@ const VIEWS = {
 		title: "All Cases",
 		subtitle: "Browse and filter fraud investigation cases",
 	},
+	caseDetail: {
+		title: "Case Detail",
+		subtitle: "Detailed investigation and analysis",
+	},
 	reports: {
 		title: "Analysis & Report",
 		subtitle: "Insights and investigation summaries",
@@ -26,6 +30,7 @@ const VIEWS = {
 let appData = null;
 let isLoading = false;
 let currentCaseFilter = "all";
+let currentSelectedCaseId = null;
 let chatHistory = [];
 let widgetOpen = false;
 
@@ -70,6 +75,51 @@ function badgeClass(value, type) {
 		risk: { High: "badge-flagged", Low: "badge-clear" },
 	};
 	return map[type]?.[value] || "";
+}
+
+function extractKeywords(text) {
+	const keywords = [
+		"unauthorized", "transfer", "payee", "new", "card", "testing", "refund", "merchant", 
+		"device", "browser", "password", "reset", "transaction", "duplicate", "charge",
+		"verification", "otp", "velocity", "geo", "fraud", "flagged", "frozen", "blocked",
+		"reversed", "locked", "payout", "deposit", "payment", "high-value", "anomaly"
+	];
+	
+	const found = [];
+	const lowerText = text.toLowerCase();
+	
+	keywords.forEach(keyword => {
+		if (lowerText.includes(keyword) && !found.includes(keyword)) {
+			found.push(keyword);
+		}
+	});
+	
+	return found;
+}
+
+function matchPolicies(keywords, allPolicies) {
+	const matched = [];
+	
+	allPolicies.forEach(policy => {
+		const policyText = policy.summary.toLowerCase();
+		let score = 0;
+		
+		keywords.forEach(keyword => {
+			if (policyText.includes(keyword)) {
+				score++;
+			}
+		});
+		
+		if (score > 0) {
+			matched.push({
+				id: policy.id,
+				summary: policy.summary,
+				relevance: score
+			});
+		}
+	});
+	
+	return matched.sort((a, b) => b.relevance - a.relevance).slice(0, 3);
 }
 
 async function loadData() {
@@ -216,7 +266,7 @@ function renderCases(filter = "all") {
 	document.getElementById("casesTable").innerHTML = cases
 		.map(
 			(c) => `
-		<tr>
+		<tr data-case-id="${escapeHtml(c.id)}" style="cursor:pointer;">
 			<td><strong>${escapeHtml(c.id)}</strong></td>
 			<td>${escapeHtml(c.type)}</td>
 			<td><span class="badge ${badgeClass(c.status, "status")}">${c.status}</span></td>
@@ -225,6 +275,15 @@ function renderCases(filter = "all") {
 		</tr>`
 		)
 		.join("");
+
+	document.querySelectorAll("#casesTable tr[data-case-id]").forEach((row) => {
+		row.addEventListener("click", () => {
+			const caseId = row.dataset.caseId;
+			currentSelectedCaseId = caseId;
+			renderCaseDetail(caseId);
+			navigateTo("caseDetail");
+		});
+	});
 }
 
 function setupCaseFilters() {
@@ -237,6 +296,58 @@ function setupCaseFilters() {
 			renderCases(btn.dataset.filter);
 		});
 	});
+}
+
+function renderCaseDetail(caseId) {
+	const caseData = appData.cases.find(c => c.id === caseId);
+	if (!caseData) return;
+
+	const keywords = extractKeywords(caseData.summary);
+	const matchedPolicies = matchPolicies(keywords, appData.policies);
+
+	document.getElementById("caseDetailId").textContent = caseId;
+	document.getElementById("caseDetailStatus").textContent = caseData.status;
+	document.getElementById("caseDetailStatus").className = `badge ${badgeClass(caseData.status, "status")}`;
+
+	document.getElementById("caseDetailMessage").innerHTML = `<p>${escapeHtml(caseData.summary)}</p>`;
+
+	document.getElementById("caseDetailKeywords").innerHTML = keywords.length > 0
+		? `<div class="keywords-list">${keywords.map(kw => `<span class="keyword-tag">${escapeHtml(kw)}</span>`).join("")}</div>`
+		: `<p class="text-muted">No keywords detected</p>`;
+
+	const suggestionsText = `
+		<div class="suggestion-item">
+			<strong>Case Type:</strong> ${escapeHtml(caseData.type)}
+		</div>
+		<div class="suggestion-item">
+			<strong>Severity:</strong> <span class="badge ${badgeClass(caseData.severity, "severity")}">${escapeHtml(caseData.severity)}</span>
+		</div>
+		<div class="suggestion-item">
+			<strong>Status:</strong> <span class="badge ${badgeClass(caseData.status, "status")}">${escapeHtml(caseData.status)}</span>
+		</div>
+		<div class="suggestion-item" style="margin-top: 12px;">
+			<strong>Recommendations:</strong>
+			<p>Based on the detected keywords and case analysis, review the matched policies below for compliance and investigation guidance.</p>
+		</div>
+	`;
+
+	document.getElementById("caseDetailSuggestions").innerHTML = suggestionsText;
+
+	const policiesHtml = matchedPolicies.length > 0
+		? `<div class="policies-list">${matchedPolicies.map(p => `
+			<div class="policy-item">
+				<div class="policy-id">${escapeHtml(p.id)}</div>
+				<div class="policy-summary">${escapeHtml(p.summary)}</div>
+			</div>
+		`).join("")}</div>`
+		: `<p class="text-muted">No matching policies found</p>`;
+
+	document.getElementById("caseDetailPolicies").innerHTML = `
+		<div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--ih-border);">
+			<h3 style="margin-top: 0;">Relevant Policies</h3>
+			${policiesHtml}
+		</div>
+	`;
 }
 
 function renderBarChart(containerId, items) {
@@ -577,4 +688,5 @@ document.addEventListener("DOMContentLoaded", async () => {
 	setupExportReport();
 
 	document.getElementById("logoutBtn").addEventListener("click", logout);
+	document.getElementById("backFromCaseDetailBtn").addEventListener("click", () => navigateTo("cases"));
 });

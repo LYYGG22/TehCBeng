@@ -8,6 +8,10 @@ function getDB() {
     static $db;
     if ($db) return $db;
 
+    if (!class_exists('PDO') || !in_array('sqlite', PDO::getAvailableDrivers(), true)) {
+        throw new RuntimeException('SQLite PDO driver is not available on this PHP installation.');
+    }
+
     $dbPath = __DIR__ . '/../data/app.db';
     $needsInit = !file_exists($dbPath);
 
