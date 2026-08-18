@@ -1328,6 +1328,14 @@ body {
 	border-color: var(--ih-accent);
 }
 
+.result-item.clickable {
+	cursor: pointer;
+}
+
+.result-item.clickable:hover {
+	background: #eff6ff;
+}
+
 .result-id {
 	font-size: 0.75rem;
 	font-weight: 600;

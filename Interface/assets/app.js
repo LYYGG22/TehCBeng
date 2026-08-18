@@ -34,6 +34,7 @@ let currentSelectedCaseId = null;
 let chatHistory = [];
 let widgetOpen = false;
 let knowledgeSearchRequestId = 0;
+let caseDetailReturnView = "cases";
 
 const CHAT_CONTAINERS = {
 	full: { messagesId: "chatbotMessages", welcomeId: "chatbotWelcome", inputId: "chatbotInput", sendId: "chatbotSendBtn" },
@@ -279,12 +280,18 @@ function renderCases(filter = "all") {
 
 	document.querySelectorAll("#casesTable tr[data-case-id]").forEach((row) => {
 		row.addEventListener("click", () => {
-			const caseId = row.dataset.caseId;
-			currentSelectedCaseId = caseId;
-			renderCaseDetail(caseId);
-			navigateTo("caseDetail");
+			openCaseDetail(row.dataset.caseId, "cases");
 		});
 	});
+}
+
+function openCaseDetail(caseId, returnView = "cases") {
+	currentSelectedCaseId = caseId;
+	caseDetailReturnView = returnView;
+	document.getElementById("backFromCaseDetailBtn").textContent =
+		returnView === "knowledge" ? "← Back to Knowlegde Search" : "← Back to Cases";
+	renderCaseDetail(caseId);
+	navigateTo("caseDetail");
 }
 
 function setupCaseFilters() {
@@ -496,7 +503,7 @@ async function searchKnowledge(query) {
 			${grouped[type]
 				.map(
 					(r) => `
-			<div class="result-item">
+			<div class="result-item${r.type === "Case" ? " clickable" : ""}"${r.type === "Case" ? ` data-case-id="${escapeHtml(r.id)}" title="View case details"` : ""}>
 				<div class="result-id">${escapeHtml(r.id)} · ${escapeHtml(r.type)}</div>
 				<div class="result-meta">${renderSearchResultMeta(r)}</div>
 				<div class="result-text">${escapeHtml(r.summary || r.text)}</div>
@@ -508,6 +515,9 @@ async function searchKnowledge(query) {
 		.join("");
 
 	container.innerHTML = sections;
+	container.querySelectorAll(".result-item[data-case-id]").forEach((item) => {
+		item.addEventListener("click", () => openCaseDetail(item.dataset.caseId, "knowledge"));
+	});
 }
 
 function setupKnowledgeSearch() {
@@ -912,5 +922,5 @@ document.addEventListener("DOMContentLoaded", async () => {
 	setupExportReport();
 
 	document.getElementById("logoutBtn").addEventListener("click", logout);
-	document.getElementById("backFromCaseDetailBtn").addEventListener("click", () => navigateTo("cases"));
+	document.getElementById("backFromCaseDetailBtn").addEventListener("click", () => navigateTo(caseDetailReturnView));
 });
