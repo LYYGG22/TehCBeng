@@ -1,4 +1,8 @@
 [
-  {"id": "FC001", "text": "Case: Customer reported unauthorized $2,500 transfer to new payee added same day. Investigation found device fingerprint mismatch. Resolution: Reversed, account locked."},
-  {"id": "FC002", "text": "Case: Multiple small transactions under $50 within 10 minutes to different merchants, flagged as card testing pattern. Resolution: Card frozen pending verification."}
+  {"id": "FC001", "text": "Case: Customer reported unauthorized $2,500 transfer to new payee added same day. Resolution: Reversed, account locked."},
+  {"id": "FC002", "text": "Case: Multiple small transactions under $50 within 10 minutes to different merchants, flagged as card testing pattern. Resolution: Card frozen pending verification."},
+  {"id": "FC003", "text": "Case: Three refunds were issued to the same customer profile within 20 minutes after a rapid sequence of high-value purchases from a single merchant. Resolution: Merchant account frozen and refunds reversed."},
+  {"id": "FC004", "text": "Case: Customer reported a $1,850 duplicate charge after a failed top-up request. Open review remains pending before funds are released."},
+  {"id": "FC005", "text": "Case: New browser session, unknown device fingerprint, and a pending payout request of $6,900 were flagged before authorization. Case remains open for verification."},
+  {"id": "FC006", "text": "Case: Customer reported a $1,400 transfer mismatch after repeated billing errors. Resolution: Funds restored and account review completed."}
 ]
