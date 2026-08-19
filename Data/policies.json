@@ -1,4 +1,4 @@
 [
-  {"id": "POL001", "text": "Policy: Any single transaction exceeding $5,000 requires secondary verification via OTP before processing."},
+  {"id": "POL001", "text": "Policy: Any single transaction exceeding $5,000 requires secondary verification via OTP before processing.", "access_level": "manager"},
   {"id": "POL002", "text": "Policy: More than 5 transactions within a 15-minute window from the same account triggers automatic velocity check."}
 ]

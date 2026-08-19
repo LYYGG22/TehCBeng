@@ -25,8 +25,13 @@ require_once __DIR__ . '/retrieve_data.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
 $userQuery = $data['query'] ?? '';
+$userRole = $_SESSION['user']['role'] ?? 'Staff';
 
-$relevantDocs = retrieveRelevant($userQuery, 3);
+// Permission-aware retrieval: records outside $userRole's access level are filtered
+// out inside retrieveRelevant() and never make it into $context below.
+$retrieval = retrieveRelevant($userQuery, 3, $userRole);
+$relevantDocs = $retrieval['docs'];
+$restrictedCount = $retrieval['restricted_count'];
 
 if (empty($relevantDocs)) {
     $context = "No specific matching cases, policies, transactions, or documents were found in the database for this question.";
@@ -93,5 +98,6 @@ $confidence = empty($docConfidences) ? 0 : (int) max($docConfidences);
 echo json_encode([
     'answer' => $answer,
     'confidence' => $confidence,
-    'sources_used' => $sourcesUsed
+    'sources_used' => $sourcesUsed,
+    'restricted_count' => $restrictedCount
 ]);

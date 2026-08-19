@@ -1,4 +1,4 @@
 [
-  {"id": "TX001", "text": "Transaction TX001: amount $4800, time 2026-08-14 23:41, location Unknown VPN IP, flagged true"},
+  {"id": "TX001", "text": "Transaction TX001: amount $4800, time 2026-08-14 23:41, location Unknown VPN IP, flagged true", "access_level": "manager"},
   {"id": "TX002", "text": "Transaction TX002: amount $20, location Local merchant, flagged false"}
 ]

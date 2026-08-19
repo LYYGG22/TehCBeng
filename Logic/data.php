@@ -38,9 +38,14 @@ switch ($action) {
 
 function getAllData(): array
 {
-    $cases = json_decode(file_get_contents(__DIR__ . '/../Data/fraud_cases.json'), true);
-    $transactions = json_decode(file_get_contents(__DIR__ . '/../Data/transactions.json'), true);
-    $policies = json_decode(file_get_contents(__DIR__ . '/../Data/policies.json'), true);
+    // Permission-aware: restricted records are excluded from the dashboard
+    // for this role, same as the chatbot's retrieval.
+    $role = $_SESSION['user']['role'] ?? 'Staff';
+    $accessibleDocs = array_filter(loadAllDocs(), fn($d) => canAccessDocument($d, $role));
+
+    $cases = array_values(array_filter($accessibleDocs, fn($d) => $d['source'] === 'fraud_cases'));
+    $transactions = array_values(array_filter($accessibleDocs, fn($d) => $d['source'] === 'transactions'));
+    $policies = array_values(array_filter($accessibleDocs, fn($d) => $d['source'] === 'policies'));
 
     $formattedCases = array_map(fn($c) => formatCase($c), $cases);
     $resolvedCases = count(array_filter($formattedCases, fn($c) => $c['status'] === 'Resolved'));
@@ -175,19 +180,24 @@ function handleSearch(): void
         return;
     }
 
-    // Search the JSON knowledge-base files directly so case, transaction, and
-    // policy IDs (for example, FC001 or TX001) work as search keywords too.
-    $docs = [];
-    foreach (['fraud_cases', 'transactions', 'policies'] as $source) {
-        $items = json_decode(file_get_contents(__DIR__ . "/../Data/{$source}.json"), true) ?? [];
-        foreach ($items as $item) {
-            $haystack = strtolower(($item['id'] ?? '') . ' ' . ($item['text'] ?? ''));
-            if (str_contains($haystack, strtolower($query))) {
-                $item['source'] = $source;
-                $docs[] = $item;
-            }
+    // Permission-aware: restricted records are dropped before they can appear
+    // in search results, so case/transaction/policy IDs (e.g. FC001, TX001)
+    // work as search keywords but never surface content outside this role's
+    // access level.
+    $role = $_SESSION['user']['role'] ?? 'Staff';
+    $queryLower = strtolower($query);
+    $searchableSources = ['fraud_cases', 'transactions', 'policies'];
+
+    $docs = array_values(array_filter(loadAllDocs(), function (array $item) use ($role, $queryLower, $searchableSources) {
+        if (!in_array($item['source'], $searchableSources, true)) {
+            return false;
         }
-    }
+        if (!canAccessDocument($item, $role)) {
+            return false;
+        }
+        $haystack = strtolower(($item['id'] ?? '') . ' ' . ($item['text'] ?? ''));
+        return str_contains($haystack, $queryLower);
+    }));
 
     $results = array_map(function (array $doc) {
         $type = sourceToType($doc['source']);

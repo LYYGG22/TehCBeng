@@ -691,16 +691,27 @@ function buildConfidenceHtml(confidence) {
 		</div>`;
 }
 
-function buildMessageHtml(role, text, sources = [], confidence = null) {
+// Told apart from a plain "no results" answer: this fires only when
+// permission-aware retrieval actually dropped a matching record for the
+// current user's role before it reached the AI.
+function buildRestrictedNoteHtml(restrictedCount) {
+	if (!restrictedCount) return "";
+	const plural = restrictedCount === 1 ? "record" : "records";
+	return `<div class="answer-restricted-note">${restrictedCount} matching ${plural} withheld — restricted to a higher access level</div>`;
+}
+
+function buildMessageHtml(role, text, sources = [], confidence = null, restrictedCount = 0) {
 	const isBot = role === "bot";
 	const sourcesHtml = isBot ? buildSourceTagsHtml(sources) : "";
 	const confidenceHtml = isBot ? buildConfidenceHtml(confidence) : "";
+	const restrictedHtml = isBot ? buildRestrictedNoteHtml(restrictedCount) : "";
 	const bubbleContent = isBot ? renderBotText(text) : escapeHtml(text);
 	return `
 		<div class="message-avatar">${role === "user" ? "You" : "IH"}</div>
 		<div class="message-content">
 			<div class="message-bubble${isBot ? " message-bubble-rich" : ""}">${bubbleContent}</div>
 			${confidenceHtml}
+			${restrictedHtml}
 			${sourcesHtml}
 		</div>`;
 }
@@ -794,10 +805,10 @@ function renderChatContainer(containerKey) {
 	hideWelcome(cfg.welcomeId);
 	chat.querySelectorAll(".message, .typing-indicator-wrap").forEach((el) => el.remove());
 
-	chatHistory.forEach(({ role, text, sources, confidence }) => {
+	chatHistory.forEach(({ role, text, sources, confidence, restrictedCount }) => {
 		const msg = document.createElement("div");
 		msg.className = `message ${role}`;
-		msg.innerHTML = buildMessageHtml(role, text, sources, confidence);
+		msg.innerHTML = buildMessageHtml(role, text, sources, confidence, restrictedCount);
 		chat.appendChild(msg);
 	});
 
@@ -809,8 +820,8 @@ function renderAllChats() {
 	renderChatContainer("widget");
 }
 
-function appendMessage(role, text, sources = [], confidence = null) {
-	chatHistory.push({ role, text, sources, confidence });
+function appendMessage(role, text, sources = [], confidence = null, restrictedCount = 0) {
+	chatHistory.push({ role, text, sources, confidence, restrictedCount });
 	renderAllChats();
 }
 
@@ -878,7 +889,8 @@ async function sendQuery(inputId, sendBtnId) {
 			"bot",
 			data.answer,
 			data.sources_used || [],
-			data.confidence ?? null
+			data.confidence ?? null,
+			data.restricted_count ?? 0
 		);
 	} catch {
 		hideTyping();

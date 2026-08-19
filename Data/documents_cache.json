@@ -12,6 +12,7 @@
     {
         "id": "DOC_transaction_log",
         "text": "Transaction ID | Date | Customer | Amount (MYR) | Payment Method | Status | Fraud Flag | Remarks\nTXN-20260817-001 | 2026-08-17 | John Tan | 120 | Credit Card | Completed | No | Normal transaction\nTXN-20260817-002 | 2026-08-17 | Alice Lim | 85.5 | Online Banking | Refunded | No | Duplicate payment\nTXN-20260817-003 | 2026-08-17 | Michael Lee | 450 | Credit Card | Under Review | Yes | Multiple failed attempts\nTXN-20260816-004 | 2026-08-16 | Sarah Wong | 210 | E-Wallet | Completed | No | Verified\nTXN-20260816-005 | 2026-08-16 | David Tan | 999 | Credit Card | Blocked | Yes | Unusual activity",
-        "source_file": "transaction_log.xlsx"
+        "source_file": "transaction_log.xlsx",
+        "access_level": "manager"
     }
 ]

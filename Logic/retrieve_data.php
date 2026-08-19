@@ -1,25 +1,35 @@
 <?php
+require_once __DIR__ . '/db.php';
+
+// Backed by Data/app.db (SQLite) rather than the old Data/*.json files.
+// Each row is normalized to the {id, text, source, access_level, ...} shape
+// the rest of this file (scoreDoc, retrieveRelevant) already expects.
 function loadAllDocs() {
+    $db = getDB();
     $docs = [];
 
-    foreach (['fraud_cases', 'policies', 'transactions'] as $file) {
-        $path = __DIR__ . "/../Data/$file.json";
-        if (file_exists($path)) {
-            $items = json_decode(file_get_contents($path), true);
-            foreach ($items as $item) {
-                $item['source'] = $file;
-                $docs[] = $item;
-            }
-        }
+    $cases = $db->query("SELECT case_id AS id, raw_details AS text, access_level FROM cases")->fetchAll();
+    foreach ($cases as $row) {
+        $row['source'] = 'fraud_cases';
+        $docs[] = $row;
     }
 
-    $cacheFile = __DIR__ . '/../Data/documents_cache.json';
-    if (file_exists($cacheFile)) {
-        $extractedDocs = json_decode(file_get_contents($cacheFile), true);
-        foreach ($extractedDocs as $doc) {
-            $doc['source'] = 'company_documents';
-            $docs[] = $doc;
-        }
+    $policies = $db->query("SELECT id, text, access_level FROM policies")->fetchAll();
+    foreach ($policies as $row) {
+        $row['source'] = 'policies';
+        $docs[] = $row;
+    }
+
+    $transactions = $db->query("SELECT id, text, access_level FROM transactions")->fetchAll();
+    foreach ($transactions as $row) {
+        $row['source'] = 'transactions';
+        $docs[] = $row;
+    }
+
+    $companyDocs = $db->query("SELECT id, text, source_file, access_level FROM company_documents")->fetchAll();
+    foreach ($companyDocs as $row) {
+        $row['source'] = 'company_documents';
+        $docs[] = $row;
     }
 
     return $docs;
@@ -33,6 +43,17 @@ function sourceToType(string $source): string
         'policies' => 'Policy',
         default => 'Document',
     };
+}
+
+// Records with no access_level are visible to every authenticated role.
+// Records tagged access_level are only visible to that exact role (case-insensitive).
+function canAccessDocument(array $doc, string $role): bool
+{
+    $required = $doc['access_level'] ?? null;
+    if ($required === null) {
+        return true;
+    }
+    return strcasecmp($required, $role) === 0;
 }
 
 function scoreDoc(array $doc, string $query, array $queryWords): int
@@ -65,30 +86,46 @@ function scoreDoc(array $doc, string $query, array $queryWords): int
     return $score;
 }
 
-function retrieveRelevant($query, $topN = 3) {
+// $role gates which records are eligible before they are ever scored or handed to the
+// AI as context — this is the permission-aware retrieval step. Pass null to skip the
+// gate entirely (used by callers that don't operate on behalf of a specific role).
+function retrieveRelevant($query, $topN = 3, $role = null) {
     $docs = loadAllDocs();
     $query = trim($query);
-    $queryWords = array_map('strtolower', preg_split('/\s+/', $query));
+    // Strip surrounding punctuation ("FC004?", "FC004," etc.) so word-level
+    // matching against record IDs and text isn't broken by sentence punctuation.
+    $queryWords = array_filter(array_map(
+        fn($w) => trim(strtolower($w), ".,!?;:'\"()[]{}"),
+        preg_split('/\s+/', $query)
+    ), fn($w) => $w !== '');
     $meaningfulWords = array_filter($queryWords, fn($w) => strlen($w) > 2);
     $wordCount = max(count($meaningfulWords), 1);
 
     $scored = [];
+    $restrictedCount = 0;
     foreach ($docs as $doc) {
-        $text = strtolower($doc['text'] ?? '');
-        $score = 0;
-        foreach ($queryWords as $word) {
-            if (strlen($word) > 2 && strpos($text, $word) !== false) {
-                $score++;
-            }
+        $score = scoreDoc($doc, $query, $queryWords);
+        if ($score === 0) {
+            continue;
         }
-        if ($score > 0) {
-            // Confidence = how much of the query's meaningful words this doc actually matched,
-            // capped at 97% so the bot never claims full certainty.
-            $doc['confidence'] = (int) min(97, round(($score / $wordCount) * 100));
-            $scored[] = ['doc' => $doc, 'score' => $score];
+
+        if ($role !== null && !canAccessDocument($doc, $role)) {
+            // Relevant, but outside this role's access level: dropped here so it
+            // never reaches the context passed to the AI.
+            $restrictedCount++;
+            continue;
         }
+
+        // Confidence = how much of the query's meaningful words this doc actually matched,
+        // capped at 97% so the bot never claims full certainty.
+        $doc['confidence'] = (int) min(97, round(($score / $wordCount) * 100));
+        $scored[] = ['doc' => $doc, 'score' => $score];
     }
 
     usort($scored, fn($a, $b) => $b['score'] <=> $a['score']);
-    return array_slice(array_column($scored, 'doc'), 0, $topN);
+
+    return [
+        'docs' => array_slice(array_column($scored, 'doc'), 0, $topN),
+        'restricted_count' => $restrictedCount,
+    ];
 }

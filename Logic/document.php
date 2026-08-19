@@ -52,6 +52,13 @@ function handleView(): void
         return;
     }
 
+    $userRole = $_SESSION['user']['role'] ?? 'Staff';
+    if (!canAccessDocument($doc, $userRole)) {
+        http_response_code(403);
+        echo json_encode(['error' => 'You do not have access to this record.']);
+        return;
+    }
+
     $fileName = $doc['source_file'] ?? null;
     $filePath = $fileName ? resolveDocumentPath($fileName) : null;
     $ext = $fileName ? strtolower(pathinfo($fileName, PATHINFO_EXTENSION)) : null;
@@ -145,6 +152,7 @@ function normalizeDocument(array $doc): array
         'category' => $categoryMap[$source] ?? 'Record',
         'record_type' => $recordTypeMap[$source] ?? 'record',
         'last_updated' => $doc['last_updated'] ?? null,
+        'access_level' => $doc['access_level'] ?? null,
     ];
 }
 
