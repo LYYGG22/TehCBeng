@@ -1330,6 +1330,10 @@ body {
 
 .result-item.clickable {
 	cursor: pointer;
+	width: 100%;
+	background: var(--ih-surface);
+	font: inherit;
+	text-align: left;
 }
 
 .result-item.clickable:hover {

@@ -17,6 +17,10 @@ const VIEWS = {
 		title: "Case Detail",
 		subtitle: "Detailed investigation and analysis",
 	},
+	recordDetail: {
+		title: "Record Detail",
+		subtitle: "Transaction or policy information",
+	},
 	reports: {
 		title: "Analysis & Report",
 		subtitle: "Insights and investigation summaries",
@@ -35,6 +39,8 @@ let chatHistory = [];
 let widgetOpen = false;
 let knowledgeSearchRequestId = 0;
 let caseDetailReturnView = "cases";
+let recordDetailReturnView = "knowledge";
+let knowledgeSearchResults = [];
 
 const CHAT_CONTAINERS = {
 	full: { messagesId: "chatbotMessages", welcomeId: "chatbotWelcome", inputId: "chatbotInput", sendId: "chatbotSendBtn" },
@@ -294,6 +300,45 @@ function openCaseDetail(caseId, returnView = "cases") {
 	navigateTo("caseDetail");
 }
 
+function renderRecordDetail(record) {
+	const isTransaction = record.type === "Transaction";
+	const badge = document.getElementById("recordDetailBadge");
+	const summary = record.summary || record.text || "No details available.";
+
+	document.getElementById("recordDetailId").textContent = `${record.type}: ${record.id}`;
+	document.getElementById("recordDetailDescriptionTitle").textContent =
+		isTransaction ? "Transaction Description" : "Policy Description";
+	document.getElementById("recordDetailDescription").innerHTML = `<p>${escapeHtml(summary)}</p>`;
+
+	if (isTransaction) {
+		badge.textContent = `${record.risk} Risk`;
+		badge.className = `badge ${badgeClass(record.risk, "risk")}`;
+		const time = summary.match(/time\s+([^,]+)/i)?.[1] || "Not provided";
+		const location = summary.match(/location\s+([^,]+)/i)?.[1] || "Not provided";
+		document.getElementById("recordDetailInformation").innerHTML = `
+			<div class="suggestion-item"><strong>Transaction ID</strong>${escapeHtml(record.id)}</div>
+			<div class="suggestion-item"><strong>Amount</strong>$${escapeHtml(String(record.amount))}</div>
+			<div class="suggestion-item"><strong>Risk level</strong>${escapeHtml(record.risk)}</div>
+			<div class="suggestion-item"><strong>Flagged</strong>${record.flagged ? "Yes" : "No"}</div>
+			<div class="suggestion-item"><strong>Time</strong>${escapeHtml(time)}</div>
+			<div class="suggestion-item"><strong>Location</strong>${escapeHtml(location)}</div>`;
+	} else {
+		badge.textContent = record.category;
+		badge.className = "badge";
+		document.getElementById("recordDetailInformation").innerHTML = `
+			<div class="suggestion-item"><strong>Policy ID</strong>${escapeHtml(record.id)}</div>
+			<div class="suggestion-item"><strong>Category</strong>${escapeHtml(record.category)}</div>
+			<div class="suggestion-item"><strong>Guidance</strong>This policy is applied when its stated conditions are met during transaction monitoring.</div>`;
+	}
+}
+
+function openRecordDetail(record, returnView = "knowledge") {
+	recordDetailReturnView = returnView;
+	document.getElementById("backFromRecordDetailBtn").textContent = "← Back to Search Results";
+	renderRecordDetail(record);
+	navigateTo("recordDetail");
+}
+
 function setupCaseFilters() {
 	document.querySelectorAll("#caseFilters .filter-btn").forEach((btn) => {
 		btn.addEventListener("click", () => {
@@ -479,6 +524,7 @@ async function searchKnowledge(query) {
 
 	const data = await res.json();
 	if (requestId !== knowledgeSearchRequestId) return;
+	knowledgeSearchResults = data.results || [];
 
 	if (!data.results?.length) {
 		container.innerHTML = `<div class="empty-state">No results found for "${escapeHtml(query)}"</div>`;
@@ -503,11 +549,11 @@ async function searchKnowledge(query) {
 			${grouped[type]
 				.map(
 					(r) => `
-			<div class="result-item${r.type === "Case" ? " clickable" : ""}"${r.type === "Case" ? ` data-case-id="${escapeHtml(r.id)}" title="View case details"` : ""}>
+			<button type="button" class="result-item clickable" data-record-id="${escapeHtml(r.id)}" data-record-type="${escapeHtml(r.type)}" title="View ${escapeHtml(r.type)} details">
 				<div class="result-id">${escapeHtml(r.id)} · ${escapeHtml(r.type)}</div>
 				<div class="result-meta">${renderSearchResultMeta(r)}</div>
 				<div class="result-text">${escapeHtml(r.summary || r.text)}</div>
-			</div>`
+			</button>`
 				)
 				.join("")}
 		</div>`
@@ -515,9 +561,6 @@ async function searchKnowledge(query) {
 		.join("");
 
 	container.innerHTML = sections;
-	container.querySelectorAll(".result-item[data-case-id]").forEach((item) => {
-		item.addEventListener("click", () => openCaseDetail(item.dataset.caseId, "knowledge"));
-	});
 }
 
 function setupKnowledgeSearch() {
@@ -529,12 +572,23 @@ function setupKnowledgeSearch() {
 	};
 	const clearSearch = () => {
 		knowledgeSearchRequestId++;
+		knowledgeSearchResults = [];
 		input.value = "";
 		container.innerHTML = `<div class="empty-state">Enter a keyword to search the knowledge base</div>`;
 		input.focus();
 	};
 	document.getElementById("knowledgeSearchBtn").addEventListener("click", search);
 	document.getElementById("knowledgeSearchCancelBtn").addEventListener("click", clearSearch);
+	container.addEventListener("click", (event) => {
+		const item = event.target.closest(".result-item[data-record-id]");
+		if (!item) return;
+		const result = knowledgeSearchResults.find(
+			(r) => r.id === item.dataset.recordId && r.type === item.dataset.recordType
+		);
+		if (!result) return;
+		if (result.type === "Case") openCaseDetail(result.id, "knowledge");
+		else openRecordDetail(result, "knowledge");
+	});
 	input.addEventListener("keydown", (e) => {
 		if (e.key === "Enter") search();
 	});
@@ -923,4 +977,5 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	document.getElementById("logoutBtn").addEventListener("click", logout);
 	document.getElementById("backFromCaseDetailBtn").addEventListener("click", () => navigateTo(caseDetailReturnView));
+	document.getElementById("backFromRecordDetailBtn").addEventListener("click", () => navigateTo(recordDetailReturnView));
 });
