@@ -29,9 +29,7 @@ include __DIR__ . '/partials/chrome_head.php';
 							</div>
 							<div class="card-body">
 								<div id="searchResults">
-									<div class="empty-state">
-										Enter a keyword to search the knowledge base
-									</div>
+									<div id="recentKnowledgeRecords"></div>
 								</div>
 							</div>
 						</div>

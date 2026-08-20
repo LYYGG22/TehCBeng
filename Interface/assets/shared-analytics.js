@@ -6,6 +6,24 @@ function recordNumber(id) {
 	return match ? Number(match[1]) : 0;
 }
 
+function riskRank(risk) {
+	return { High: 0, Medium: 1, Low: 2 }[risk] ?? 3;
+}
+
+// Used by case-detail.js (routing a case) and process-insights.js (grouping
+// automation candidates by where they'd be routed).
+function getRecommendedDepartment(caseType) {
+	const departments = {
+		"Account Takeover": "Account Security", "SIM Swap": "Account Security",
+		Phishing: "Account Security", "Social Engineering": "Account Security",
+		"Identity Theft": "Identity Verification", "Card Testing": "Card Operations",
+		"Geo-Velocity Anomaly": "Card Operations", "Merchant Refund Abuse": "Merchant Risk",
+		"Duplicate Charge": "Payments & Billing", "Friendly Fraud": "Chargebacks",
+		"Money Mule": "Financial Crime Investigations", "Unauthorized Transfer": "Payments Investigations",
+	};
+	return departments[caseType] || "Fraud Operations";
+}
+
 function extractKeywords(text) {
 	const keywords = [
 		"unauthorized", "transfer", "payee", "new", "card", "testing", "refund", "merchant",

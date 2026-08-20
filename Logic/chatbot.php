@@ -95,6 +95,17 @@ $docConfidences = array_filter(
 );
 $confidence = empty($docConfidences) ? 0 : (int) max($docConfidences);
 
+// Best-effort usage log for Process Insights' "Unanswered Questions" gap
+// detection. Never allowed to break the actual chat response.
+try {
+    $stmt = getDB()->prepare(
+        'INSERT INTO chat_log (asked_at, role, query, confidence, restricted_count, source_count) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    $stmt->execute([date('c'), $userRole, $userQuery, $confidence, $restrictedCount, count($sourcesUsed)]);
+} catch (Throwable $e) {
+    // Logging is not critical to answering the question.
+}
+
 echo json_encode([
     'answer' => $answer,
     'confidence' => $confidence,

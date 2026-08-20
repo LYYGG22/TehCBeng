@@ -2,39 +2,60 @@ function renderDashboard() {
 	const { stats, cases, transactions, policies } = appData;
 
 	document.getElementById("statsGrid").innerHTML = `
-		<div class="stat-card">
+		<button type="button" class="stat-card clickable" data-dashboard-action="all-cases" title="View all cases">
 			<div class="stat-card-header">
 				<span class="stat-label">Total Cases</span>
 				<div class="stat-icon blue">📋</div>
 			</div>
 			<div class="stat-value">${stats.total_cases}</div>
 			<div class="stat-change">${stats.open_cases} currently open</div>
-		</div>
-		<div class="stat-card">
+		</button>
+		<button type="button" class="stat-card clickable" data-dashboard-action="flagged-transactions" title="View flagged transactions">
 			<div class="stat-card-header">
 				<span class="stat-label">Flagged Transactions</span>
 				<div class="stat-icon red">⚠️</div>
 			</div>
 			<div class="stat-value">${stats.flagged_transactions}</div>
 			<div class="stat-change">of ${stats.total_transactions} total</div>
-		</div>
-		<div class="stat-card">
+		</button>
+		<button type="button" class="stat-card clickable" data-dashboard-action="active-policies" title="View active policies">
 			<div class="stat-card-header">
 				<span class="stat-label">Active Policies</span>
 				<div class="stat-icon green">📜</div>
 			</div>
-			<div class="stat-value">${stats.policies}</div>
-			<div class="stat-change">compliance rules enforced</div>
-		</div>
-		<div class="stat-card">
+			<div class="stat-value" id="activePoliciesValue">${stats.policies}</div>
+			<div class="stat-change">policies used in cases</div>
+		</button>
+		<button type="button" class="stat-card clickable" data-dashboard-action="resolved-cases" title="View resolved cases">
 			<div class="stat-card-header">
 				<span class="stat-label">Resolved Cases</span>
 				<div class="stat-icon amber">✓</div>
 			</div>
 			<div class="stat-value">${stats.resolved_cases}</div>
 			<div class="stat-change">investigations closed</div>
-		</div>
+		</button>
 	`;
+
+	document.querySelectorAll("#statsGrid [data-dashboard-action]").forEach((card) => {
+		card.addEventListener("click", () => {
+			switch (card.dataset.dashboardAction) {
+				case "all-cases":
+					window.location.href = "cases.php";
+					break;
+				case "flagged-transactions":
+					document.getElementById("flaggedTable").closest(".content-card")
+						.scrollIntoView({ behavior: "smooth", block: "start" });
+					break;
+				case "active-policies":
+					document.getElementById("policiesTable").closest(".content-card")
+						.scrollIntoView({ behavior: "smooth", block: "start" });
+					break;
+				case "resolved-cases":
+					window.location.href = "cases.php?filter=Resolved";
+					break;
+			}
+		});
+	});
 
 	const activities = [
 		...cases.map((c) => ({
@@ -51,9 +72,9 @@ function renderDashboard() {
 				type: "transaction",
 				record: t,
 				sortOrder: recordNumber(t.id),
-				dot: "red",
+				dot: t.risk === "High" ? "red" : t.risk === "Medium" ? "amber" : "green",
 				text: `Transaction ${t.id} flagged`,
-				meta: `$${t.amount} · High risk`,
+				meta: `$${t.amount} · ${t.risk} risk`,
 			})),
 	].sort((a, b) => b.sortOrder - a.sortOrder).slice(0, 5);
 
@@ -81,7 +102,9 @@ function renderDashboard() {
 		});
 	});
 
-	const flagged = transactions.filter((t) => t.flagged);
+	const flagged = transactions
+		.filter((t) => t.flagged)
+		.sort((a, b) => riskRank(a.risk) - riskRank(b.risk) || recordNumber(b.id) - recordNumber(a.id));
 	document.getElementById("flaggedTable").innerHTML =
 		flagged.length > 0
 			? flagged
@@ -111,6 +134,7 @@ function renderDashboard() {
 		}))
 		.filter((policy) => policy.usedIn > 0)
 		.sort((a, b) => b.usedIn - a.usedIn || a.id.localeCompare(b.id));
+	document.getElementById("activePoliciesValue").textContent = activePolicies.length;
 
 	document.getElementById("policiesTable").innerHTML = activePolicies.length
 		? activePolicies
@@ -118,7 +142,7 @@ function renderDashboard() {
 			(p) => `
 		<tr class="clickable" data-policy-id="${escapeHtml(p.id)}" title="View ${escapeHtml(p.id)} details">
 			<td><strong>${escapeHtml(p.id)}</strong></td>
-			<td>${escapeHtml(p.category)}</td>
+			<td><span class="badge ${categoryBadgeClass(p.category)}">${escapeHtml(p.category)}</span></td>
 			<td>${p.usedIn} case${p.usedIn === 1 ? "" : "s"}</td>
 			<td>${escapeHtml(p.summary)}</td>
 		</tr>`

@@ -42,6 +42,15 @@ include __DIR__ . '/partials/chrome_head.php';
 								<div class="detail-section">
 									<h2>Suggestions & Conclusions</h2>
 									<div class="suggestions-box" id="caseDetailSuggestions"></div>
+									<div class="case-action-panel" id="caseDetailActionsSection">
+										<h3 id="caseDetailActionsTitle">Case Actions</h3>
+										<p class="action-helper" id="caseDetailActionHelper"></p>
+										<div class="case-actions">
+											<button type="button" class="case-action-button resolve" id="resolveCaseBtn">Mark as resolved</button>
+											<button type="button" class="case-action-button forward" id="forwardCaseBtn">Send to recommended department</button>
+										</div>
+										<p class="case-action-feedback" id="caseDetailActionFeedback" role="status"></p>
+									</div>
 									<div class="matched-policies" id="caseDetailPolicies"></div>
 								</div>
 							</div>

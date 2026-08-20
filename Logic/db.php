@@ -32,6 +32,20 @@ function getDB() {
     // without needing to delete app.db or touch SQL by hand.
     syncKnowledgeBaseFromJson($db);
 
+    // IF NOT EXISTS rather than branching on $needsInit: cheap, idempotent,
+    // and avoids duplicating the schema between initSchema() and ensureSchema().
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS chat_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            asked_at TEXT NOT NULL,
+            role TEXT NOT NULL,
+            query TEXT NOT NULL,
+            confidence INTEGER NOT NULL,
+            restricted_count INTEGER NOT NULL,
+            source_count INTEGER NOT NULL
+        )
+    ");
+
     return $db;
 }
 

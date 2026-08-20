@@ -1,6 +1,12 @@
 <?php
 // Included by every page. Expects $activeView, $pageTitle, $pageSubtitle to
 // already be set by the including page.
+//
+// session_start() reads the same PHP session Logic/auth.php already writes to
+// (same origin, default cookie path) so the sidebar can decide what to show
+// based on role, without a separate API call.
+session_start();
+$currentRole = $_SESSION['user']['role'] ?? 'Staff';
 ?>
 <!doctype html>
 <html lang="en">
@@ -15,7 +21,7 @@
 		<div class="app-layout">
 			<aside class="sidebar">
 				<div class="sidebar-brand">
-					<img src="assets/logo.png" alt="IntelliHub" class="sidebar-logo" />
+					<span class="sidebar-brand-text">IntelliHub</span>
 				</div>
 
 				<nav class="sidebar-nav">
@@ -88,6 +94,23 @@
 						</span>
 						<span>Analysis &amp; Report</span>
 					</a>
+<?php if ($currentRole === 'Manager'): ?>
+					<a class="nav-item <?= $activeView === 'processInsights' ? 'active' : '' ?>" href="process-insights.php">
+						<span class="nav-icon">
+							<svg
+								width="18"
+								height="18"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+							>
+								<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+							</svg>
+						</span>
+						<span>Process Insights</span>
+					</a>
+<?php endif; ?>
 					<a class="nav-item <?= $activeView === 'chatbot' ? 'active' : '' ?>" href="chatbot.php">
 						<span class="nav-icon">
 							<svg

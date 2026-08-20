@@ -1,6 +1,12 @@
+function setRecordDetailFlagButton(button, isFlagged, disabled = false) {
+	button.disabled = disabled;
+	button.innerHTML = `<span>${isFlagged ? "Unflag Transaction" : "Flag Transaction"}</span>`;
+}
+
 function renderRecordDetail(record) {
 	const isTransaction = record.type === "Transaction";
 	const badge = document.getElementById("recordDetailBadge");
+	const flagButton = document.getElementById("recordDetailFlagBtn");
 	const summary = record.summary || record.text || "No details available.";
 
 	document.getElementById("recordDetailId").textContent = `${record.type}: ${record.id}`;
@@ -16,13 +22,29 @@ function renderRecordDetail(record) {
 		document.getElementById("recordDetailInformation").innerHTML = `
 			<div class="suggestion-item"><strong>Transaction ID</strong>${escapeHtml(record.id)}</div>
 			<div class="suggestion-item"><strong>Amount</strong>$${escapeHtml(String(record.amount))}</div>
-			<div class="suggestion-item"><strong>Risk level</strong>${escapeHtml(record.risk)}</div>
+			<div class="suggestion-item"><strong>Risk level</strong><span class="badge ${badgeClass(record.risk, "risk")}">${escapeHtml(record.risk)}</span></div>
 			<div class="suggestion-item"><strong>Flagged</strong>${record.flagged ? "Yes" : "No"}</div>
 			<div class="suggestion-item"><strong>Time</strong>${escapeHtml(time)}</div>
 			<div class="suggestion-item"><strong>Location</strong>${escapeHtml(location)}</div>`;
+
+		flagButton.hidden = !canManageTransactionFlags();
+		setRecordDetailFlagButton(flagButton, record.flagged, !canManageTransactionFlags());
+		flagButton.onclick = async () => {
+			if (flagButton.disabled) return;
+			const nextFlagState = !record.flagged;
+			setRecordDetailFlagButton(flagButton, nextFlagState, true);
+			if (!(await toggleTransactionFlag(record.id))) {
+				setRecordDetailFlagButton(flagButton, record.flagged);
+				return;
+			}
+			const updatedRecord = appData.transactions.find((item) => item.id === record.id);
+			if (updatedRecord) renderRecordDetail({ ...updatedRecord, type: "Transaction" });
+		};
 	} else {
+		flagButton.hidden = true;
+		flagButton.onclick = null;
 		badge.textContent = record.category;
-		badge.className = "badge";
+		badge.className = `badge ${categoryBadgeClass(record.category)}`;
 		document.getElementById("recordDetailInformation").innerHTML = `
 			<div class="suggestion-item"><strong>Policy ID</strong>${escapeHtml(record.id)}</div>
 			<div class="suggestion-item"><strong>Category</strong>${escapeHtml(record.category)}</div>

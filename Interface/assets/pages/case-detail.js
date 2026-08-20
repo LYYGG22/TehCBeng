@@ -10,6 +10,8 @@ function renderCaseDetail(caseId) {
 	const originalMessage = caseData.original_message || "";
 	const keywords = extractKeywords(`${originalMessage} ${caseData.summary || ""}`);
 	const matchedPolicies = matchPolicies(keywords, appData.policies);
+	const recommendedDepartment = getRecommendedDepartment(caseData.type);
+	const needsDepartmentRecommendation = ["Medium", "High"].includes(caseData.severity);
 
 	document.getElementById("caseDetailId").textContent = caseId;
 	document.getElementById("caseDetailStatus").textContent = caseData.status;
@@ -37,6 +39,8 @@ function renderCaseDetail(caseId) {
 			<strong>Recommendations:</strong>
 			<p>Based on the detected keywords and case analysis, review the matched policies below for compliance and investigation guidance.</p>
 		</div>
+		${needsDepartmentRecommendation ? `<div class="suggestion-item"><strong>Recommended department:</strong> ${escapeHtml(recommendedDepartment)}</div>` : ""}
+		${caseData.assigned_department ? `<div class="suggestion-item"><strong>Sent to:</strong> ${escapeHtml(caseData.assigned_department)}</div>` : ""}
 	`;
 
 	document.getElementById("caseDetailSuggestions").innerHTML = suggestionsText;
@@ -56,6 +60,61 @@ function renderCaseDetail(caseId) {
 			${policiesHtml}
 		</div>
 	`;
+
+	const isResolved = caseData.status === "Resolved";
+	const isInProgress = caseData.status === "In Progress";
+	const actionButtons = document.querySelector("#caseDetailActionsSection .case-actions");
+	const assignedDepartment = caseData.assigned_department || recommendedDepartment;
+	document.getElementById("caseDetailActionsTitle").textContent = isInProgress ? "Department Routing" : isResolved ? "Case Status" : "Case Actions";
+	document.getElementById("caseDetailActionHelper").textContent = isResolved
+		? "This case has been resolved. No further action is required."
+		: isInProgress
+			? `Case sent to ${assignedDepartment} department and currently in progress.`
+		: needsDepartmentRecommendation
+			? `This ${caseData.severity.toLowerCase()}-severity case should be handled by ${recommendedDepartment}.`
+			: "Resolve the case when the investigation is complete, or route it to the responsible department.";
+	actionButtons.hidden = isInProgress || isResolved;
+	document.getElementById("resolveCaseBtn").disabled = isResolved;
+	document.getElementById("resolveCaseBtn").textContent = isResolved ? "Case resolved" : "Mark as resolved";
+	document.getElementById("forwardCaseBtn").disabled = isResolved;
+	document.getElementById("forwardCaseBtn").textContent = `Send to ${recommendedDepartment}`;
+	document.getElementById("caseDetailActionFeedback").textContent = "";
+	document.getElementById("caseDetailActionFeedback").className = "case-action-feedback";
+	document.getElementById("resolveCaseBtn").onclick = () => performCaseAction(caseId, "resolve");
+	document.getElementById("forwardCaseBtn").onclick = () => performCaseAction(caseId, "forward");
+}
+
+async function performCaseAction(caseId, action) {
+	const buttons = [document.getElementById("resolveCaseBtn"), document.getElementById("forwardCaseBtn")];
+	const feedback = document.getElementById("caseDetailActionFeedback");
+	buttons.forEach((button) => { button.disabled = true; });
+	feedback.textContent = "Updating case...";
+	feedback.className = "case-action-feedback";
+
+	try {
+		const response = await fetch(`${API_BASE}/case_actions.php`, {
+			method: "POST",
+			credentials: "include",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ case_id: caseId, action }),
+		});
+		const result = await response.json();
+		if (!response.ok) throw new Error(result.error || "Unable to update the case.");
+
+		const caseData = appData.cases.find((item) => item.id === caseId);
+		if (caseData) {
+			caseData.status = result.status;
+			caseData.assigned_department = result.department || null;
+		}
+		renderCaseDetail(caseId);
+		const updatedFeedback = document.getElementById("caseDetailActionFeedback");
+		updatedFeedback.textContent = result.message;
+		updatedFeedback.className = "case-action-feedback success";
+	} catch (error) {
+		buttons.forEach((button) => { button.disabled = false; });
+		feedback.textContent = error.message;
+		feedback.className = "case-action-feedback error";
+	}
 }
 
 async function initPage() {

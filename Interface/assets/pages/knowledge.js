@@ -1,6 +1,34 @@
 let knowledgeSearchRequestId = 0;
 let knowledgeSearchResults = [];
 
+function renderRecentKnowledge() {
+	const container = document.getElementById("recentKnowledgeRecords");
+	if (!container || !appData) return;
+	const recentCases = [...appData.cases].sort((a, b) => recordNumber(b.id) - recordNumber(a.id)).slice(0, 3)
+		.map((record) => ({ ...record, type: "Case" }));
+	const recentPolicies = [...appData.policies].sort((a, b) => recordNumber(b.id) - recordNumber(a.id)).slice(0, 3)
+		.map((record) => ({ ...record, type: "Policy" }));
+	const recentTransactions = [...appData.transactions].sort((a, b) => recordNumber(b.id) - recordNumber(a.id)).slice(0, 3)
+		.map((record) => ({ ...record, type: "Transaction" }));
+	knowledgeSearchResults = [...recentCases, ...recentPolicies, ...recentTransactions];
+
+	const groups = [
+		["Recent Cases", recentCases],
+		["Recent Policies", recentPolicies],
+		["Recent Transactions", recentTransactions],
+	].map(([label, records]) => `
+		<div class="search-result-group">
+			<div class="search-result-group-title">${label}</div>
+			${records.map((record) => `
+				<button type="button" class="result-item clickable" data-record-id="${escapeHtml(record.id)}" data-record-type="${escapeHtml(record.type)}" title="View ${escapeHtml(record.type)} details">
+					<div class="result-id">${escapeHtml(record.id)} · ${escapeHtml(record.type)}</div>
+					<div class="result-meta">${renderSearchResultMeta(record)}</div>
+					<div class="result-text">${escapeHtml(record.summary)}</div>
+				</button>`).join("")}
+		</div>`).join("");
+	container.innerHTML = groups;
+}
+
 function renderSearchResultMeta(result) {
 	if (result.type === "Case") {
 		return `
@@ -14,7 +42,7 @@ function renderSearchResultMeta(result) {
 			<span class="result-meta-label">$${escapeHtml(String(result.amount))}</span>`;
 	}
 	if (result.type === "Policy") {
-		return `<span class="badge">${escapeHtml(result.category)}</span>`;
+		return `<span class="badge ${categoryBadgeClass(result.category)}">${escapeHtml(result.category)}</span>`;
 	}
 	return "";
 }
@@ -86,9 +114,9 @@ function setupKnowledgeSearch() {
 	};
 	const clearSearch = () => {
 		knowledgeSearchRequestId++;
-		knowledgeSearchResults = [];
 		input.value = "";
-		container.innerHTML = `<div class="empty-state">Enter a keyword to search the knowledge base</div>`;
+		container.innerHTML = `<div id="recentKnowledgeRecords"></div>`;
+		renderRecentKnowledge();
 		input.focus();
 	};
 	document.getElementById("knowledgeSearchBtn").addEventListener("click", search);
@@ -109,5 +137,7 @@ function setupKnowledgeSearch() {
 }
 
 async function initPage() {
+	appData = await loadData();
+	if (appData) renderRecentKnowledge();
 	setupKnowledgeSearch();
 }

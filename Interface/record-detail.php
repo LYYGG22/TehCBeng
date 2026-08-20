@@ -21,6 +21,9 @@ include __DIR__ . '/partials/chrome_head.php';
 									<h1 id="recordDetailId"></h1>
 									<span class="badge" id="recordDetailBadge"></span>
 								</div>
+								<button type="button" class="btn-outline transaction-detail-flag-btn" id="recordDetailFlagBtn" hidden>
+									<span>Flag Transaction</span>
+								</button>
 							</div>
 
 							<div class="case-detail-content">

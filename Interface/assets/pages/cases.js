@@ -45,6 +45,13 @@ function setupCaseFilters() {
 async function initPage() {
 	appData = await loadData();
 	if (!appData) return;
-	renderCases();
+
+	// Dashboard stat cards link here with e.g. ?filter=Resolved.
+	const requestedFilter = new URLSearchParams(window.location.search).get("filter") || "all";
+	document.querySelectorAll("#caseFilters .filter-btn").forEach((btn) => {
+		btn.classList.toggle("active", btn.dataset.filter === requestedFilter);
+	});
+
+	renderCases(requestedFilter);
 	setupCaseFilters();
 }

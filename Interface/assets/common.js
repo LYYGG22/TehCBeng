@@ -8,6 +8,7 @@
 const API_BASE = "../Logic";
 
 let appData = null;
+let currentUser = null;
 let isLoading = false;
 let chatHistory = [];
 let widgetOpen = false;
@@ -30,6 +31,7 @@ async function checkAuth() {
 }
 
 function initUser(user) {
+	currentUser = user;
 	const initials = user.name
 		.split(" ")
 		.map((w) => w[0])
@@ -48,11 +50,23 @@ function escapeHtml(text) {
 
 function badgeClass(value, type) {
 	const map = {
-		status: { Open: "badge-open", Resolved: "badge-resolved" },
+		status: { Open: "badge-open", "In Progress": "badge-in-progress", Resolved: "badge-resolved" },
 		severity: { High: "badge-high", Medium: "badge-medium", Low: "badge-low" },
-		risk: { High: "badge-flagged", Low: "badge-clear" },
+		risk: { High: "badge-flagged", Medium: "badge-medium", Low: "badge-clear" },
 	};
 	return map[type]?.[value] || "";
+}
+
+// Policy categories (Geo-Velocity, Card Testing, ...) have no natural severity
+// order like status/risk do, so they don't get red/amber/green — instead each
+// category name deterministically picks one of a small set of neutral tag
+// colors, so the same category always looks the same everywhere it appears.
+const CATEGORY_BADGE_COLORS = ["badge-tag-purple", "badge-tag-teal", "badge-tag-orange", "badge-tag-pink", "badge-tag-cyan", "badge-tag-slate"];
+function categoryBadgeClass(category) {
+	if (!category) return "";
+	let hash = 0;
+	for (let i = 0; i < category.length; i++) hash = (hash * 31 + category.charCodeAt(i)) | 0;
+	return CATEGORY_BADGE_COLORS[Math.abs(hash) % CATEGORY_BADGE_COLORS.length];
 }
 
 async function loadData() {
@@ -64,6 +78,29 @@ async function loadData() {
 		return null;
 	}
 	return res.json();
+}
+
+function canManageTransactionFlags() {
+	return Boolean(currentUser);
+}
+
+// Posts the flag toggle and refreshes the shared `appData`. Callers are
+// responsible for re-rendering whatever's actually on their page afterward —
+// unlike the pre-split version, no page has every view mounted at once.
+async function toggleTransactionFlag(id) {
+	const response = await fetch(`${API_BASE}/data.php?action=toggle_transaction_flag`, {
+		method: "POST",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ id }),
+	});
+	const result = await response.json();
+	if (!response.ok) {
+		alert(result.error || "Unable to update transaction flag.");
+		return false;
+	}
+	appData = result.data;
+	return true;
 }
 
 function goToCaseDetail(id, from) {

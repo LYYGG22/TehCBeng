@@ -50,7 +50,7 @@ body {
 
 .login-brand {
 	flex: 1;
-	background: linear-gradient(135deg, var(--ih-primary) 0%, #0f2744 100%);
+	background: var(--ih-primary);
 	color: #fff;
 	display: flex;
 	flex-direction: column;
@@ -58,17 +58,6 @@ body {
 	padding: 3rem;
 	position: relative;
 	overflow: hidden;
-}
-
-.login-brand::before {
-	content: "";
-	position: absolute;
-	top: -50%;
-	right: -30%;
-	width: 80%;
-	height: 200%;
-	background: radial-gradient(circle, rgba(37, 99, 235, 0.18) 0%, transparent 70%);
-	pointer-events: none;
 }
 
 .login-brand::after {
@@ -958,6 +947,7 @@ body {
 	font-size: 1.125rem;
 	font-weight: 700;
 	letter-spacing: -0.02em;
+	color: var(--ih-primary);
 }
 
 .sidebar-nav {
@@ -1320,6 +1310,15 @@ button.activity-item:focus-visible {
 .badge-low { background: #d1fae5; color: #065f46; }
 .badge-flagged { background: #fee2e2; color: #991b1b; }
 .badge-clear { background: #d1fae5; color: #065f46; }
+
+/* Neutral tag colors for policy categories — no severity meaning, just visual
+   grouping, so no red/amber/green here. */
+.badge-tag-purple { background: #ede9fe; color: #6d28d9; }
+.badge-tag-teal { background: #ccfbf1; color: #0f766e; }
+.badge-tag-orange { background: #ffedd5; color: #c2410c; }
+.badge-tag-pink { background: #fce7f3; color: #be185d; }
+.badge-tag-cyan { background: #cffafe; color: #0e7490; }
+.badge-tag-slate { background: #f1f5f9; color: #475569; }
 
 /* Search & knowledge */
 

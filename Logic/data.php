@@ -37,6 +37,9 @@ switch ($action) {
     case 'auto_flag_transactions':
         handleAutoFlagTransactions();
         break;
+    case 'chat_gaps':
+        handleChatGaps();
+        break;
     default:
         http_response_code(400);
         echo json_encode(['error' => 'Invalid action']);
@@ -319,6 +322,44 @@ function handleAutoFlagTransactions(): void
     }
 	syncKnowledgeBaseFromJson(getDB());
     echo json_encode(['success' => true, 'flagged_ids' => $flaggedIds, 'data' => getAllData()]);
+}
+
+// A gap here means the chatbot genuinely had nothing good to say (confidence
+// under the "low" threshold used everywhere else in the UI) — not a question
+// that was answered poorly because it hit a permission wall. restricted_count
+// > 0 means the permission system worked as intended, so those are excluded;
+// conflating the two would mislabel a working feature as a documentation hole.
+function handleChatGaps(): void
+{
+    $role = $_SESSION['user']['role'] ?? 'Staff';
+    if ($role !== 'Manager') {
+        http_response_code(403);
+        echo json_encode(['error' => 'Manager access required.']);
+        return;
+    }
+
+    $db = getDB();
+    $lowConfidenceThreshold = 40;
+
+    $total = (int) $db->query('SELECT COUNT(*) AS c FROM chat_log')->fetch()['c'];
+
+    $countStmt = $db->prepare('SELECT COUNT(*) AS c FROM chat_log WHERE confidence < ? AND restricted_count = 0');
+    $countStmt->execute([$lowConfidenceThreshold]);
+    $totalLowConfidence = (int) $countStmt->fetch()['c'];
+
+    $listStmt = $db->prepare(
+        'SELECT asked_at, role, query, confidence FROM chat_log
+         WHERE confidence < ? AND restricted_count = 0
+         ORDER BY asked_at DESC
+         LIMIT 30'
+    );
+    $listStmt->execute([$lowConfidenceThreshold]);
+
+    echo json_encode([
+        'total_logged' => $total,
+        'total_low_confidence' => $totalLowConfidence,
+        'questions' => $listStmt->fetchAll(),
+    ]);
 }
 
 function getPolicyCategory(string $text): string

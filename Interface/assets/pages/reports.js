@@ -5,7 +5,9 @@ function buildStaffReport() {
 	const openCases = cases.filter((c) => c.status === "Open");
 	const resolvedCases = cases.filter((c) => c.status === "Resolved");
 	const openHigh = openCases.filter((c) => c.severity === "High");
-	const flagged = transactions.filter((t) => t.flagged);
+	const flagged = transactions
+		.filter((t) => t.flagged)
+		.sort((a, b) => riskRank(a.risk) - riskRank(b.risk) || recordNumber(b.id) - recordNumber(a.id));
 	const resolutionRate = cases.length
 		? Math.round((resolvedCases.length / cases.length) * 100)
 		: 0;
