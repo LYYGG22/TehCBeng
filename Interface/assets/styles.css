@@ -1313,6 +1313,7 @@ button.activity-item:focus-visible {
 }
 
 .badge-open { background: #fef3c7; color: #92400e; }
+.badge-in-progress { background: #dbeafe; color: #1d4ed8; }
 .badge-resolved { background: #d1fae5; color: #065f46; }
 .badge-high { background: #fee2e2; color: #991b1b; }
 .badge-medium { background: #fef3c7; color: #92400e; }
@@ -2006,18 +2007,33 @@ button.activity-item:focus-visible {
 }
 
 .btn-back {
-	background: none;
-	border: none;
-	color: var(--ih-accent);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--ih-accent);
+	border: 1px solid var(--ih-accent);
+	border-radius: var(--ih-radius-sm);
+	color: #fff;
+	text-decoration: none;
 	cursor: pointer;
 	font-size: 0.9375rem;
-	font-weight: 500;
-	padding: 0.5rem 0;
-	transition: color 0.2s;
+	font-weight: 600;
+	font-family: inherit;
+	padding: 0.625rem 0.875rem;
+	transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
 }
 
 .btn-back:hover {
-	color: var(--ih-accent-hover);
+	background: var(--ih-accent-hover);
+	border-color: var(--ih-accent-hover);
+	color: #fff;
+}
+
+.btn-back:active { transform: scale(0.98); }
+
+.btn-back:focus-visible {
+	outline: 3px solid rgba(37, 99, 235, 0.25);
+	outline-offset: 2px;
 }
 
 .case-detail-title {
@@ -2162,6 +2178,48 @@ button.activity-item:focus-visible {
 	padding: 1rem;
 	border-radius: var(--ih-radius-sm);
 	border-left: 4px solid var(--ih-accent);
+}
+
+.case-actions {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
+.case-action-panel {
+	margin-top: 1rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--ih-border);
+}
+
+.case-action-panel h3 {
+	margin: 0 0 0.75rem;
+	font-size: 0.9375rem;
+}
+
+.case-actions[hidden] {
+	display: none;
+}
+
+.case-action-button {
+	border: 0;
+	border-radius: var(--ih-radius-sm);
+	padding: 0.7rem 1rem;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.case-action-button.resolve { background: var(--ih-success); color: #fff; }
+.case-action-button.forward { background: var(--ih-accent); color: #fff; }
+.case-action-button:disabled { opacity: 0.6; cursor: not-allowed; }
+.action-helper, .case-action-feedback { margin: 0 0 1rem; color: var(--ih-muted); }
+.case-action-feedback { margin: 1rem 0 0; font-weight: 500; }
+.case-action-feedback.success { color: var(--ih-success); }
+.case-action-feedback.error { color: var(--ih-danger); }
+
+@media (max-width: 560px) {
+	.case-action-button { width: 100%; }
 }
 
 .policy-id {

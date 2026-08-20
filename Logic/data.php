@@ -165,17 +165,20 @@ function getCaseSeverity(string $text): string
 function formatCase(array $item): array
 {
     $text = $item['text'];
-    $status = getCaseStatus($text);
+    $caseId = $item['id'];
+    $caseUpdates = $_SESSION['case_updates'][$caseId] ?? [];
+    $status = $caseUpdates['status'] ?? $item['status'] ?? getCaseStatus($text);
     $severity = $item['severity'] ?? $item['risk_level'] ?? getCaseSeverity($text);
     $type = $item['type'] ?? $item['fraud_type'] ?? getCaseType($text);
 
     return [
-        'id' => $item['id'],
+        'id' => $caseId,
         'summary' => $text,
         'original_message' => $item['original_message'] ?? '',
         'status' => $status,
         'severity' => $severity,
         'type' => $type,
+        'assigned_department' => $caseUpdates['assigned_department'] ?? null,
     ];
 }
 
