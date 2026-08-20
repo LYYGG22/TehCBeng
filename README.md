@@ -50,7 +50,6 @@ http://localhost:8000/Interface/login.html
 |---------|-----------------------------|-------------|
 | Manager | manager@intellihub.com      | manager123  |
 | Staff   | staff@intellihub.com        | staff123    |
-| Admin   | admin@intellihub.com        | admin123    |
 
 Manager and Staff see different data/features (e.g. Process Insights is Manager-only); use both to see the access control in action.
 
