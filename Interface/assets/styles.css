@@ -1990,9 +1990,11 @@ button.activity-item:focus-visible {
 }
 
 .btn-back {
+	display: inline-block;
 	background: none;
 	border: none;
 	color: var(--ih-accent);
+	text-decoration: none;
 	cursor: pointer;
 	font-size: 0.9375rem;
 	font-weight: 500;

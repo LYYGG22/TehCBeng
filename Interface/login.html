@@ -106,7 +106,7 @@
 				});
 				const data = await res.json();
 				if (data.authenticated) {
-					window.location.href = "dashboard.html";
+					window.location.href = "dashboard.php";
 				}
 			}
 
@@ -143,7 +143,7 @@
 							return;
 						}
 
-						window.location.href = "dashboard.html";
+						window.location.href = "dashboard.php";
 					} catch {
 						errorAlert.textContent = "Unable to connect to server.";
 						errorAlert.style.display = "block";
