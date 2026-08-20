@@ -78,7 +78,16 @@ if (curl_errno($ch)) {
 curl_close($ch);
 
 $result = json_decode($response, true);
-$answer = $result['choices'][0]['message']['content'] ?? 'Error retrieving answer.';
+$answer = $result['choices'][0]['message']['content'] ?? null;
+
+if ($answer === null) {
+    // Surface the actual upstream failure (e.g. the model being rate-limited)
+    // instead of a generic message, so this is diagnosable from the UI alone.
+    $upstreamMessage = $result['error']['metadata']['raw']
+        ?? $result['error']['message']
+        ?? 'Unknown error from the model provider.';
+    $answer = "Unable to get an answer right now: $upstreamMessage";
+}
 
 $sourcesUsed = array_map(function ($d) {
     $ref = [
