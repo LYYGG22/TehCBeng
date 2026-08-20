@@ -30,7 +30,8 @@
   },
   {
     "id": "POL008",
-    "text": "Policy: Duplicate charge reports after a failed payment or terminal timeout should be matched to the original transaction before any refund is issued."
+    "text": "Policy: Duplicate charge reports after a failed payment or terminal timeout should be matched to the original transaction before any refund is issued.",
+    "access_level": "staff"
   },
   {
     "id": "POL009",

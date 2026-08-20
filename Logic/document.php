@@ -69,6 +69,12 @@ function handleView(): void
     if ($filePath && $ext === 'pdf') {
         $previewType = 'pdf';
         $fileUrl = '../Logic/document.php?action=file&name=' . rawurlencode($fileName);
+    } elseif ($filePath && $ext === 'xlsx') {
+        $previewType = 'excel';
+        $fileUrl = '../Logic/document.php?action=file&name=' . rawurlencode($fileName);
+    } elseif ($filePath && $ext === 'docx') {
+        $previewType = 'word';
+        $fileUrl = '../Logic/document.php?action=file&name=' . rawurlencode($fileName);
     } elseif ($fileName) {
         $previewType = 'text';
     }

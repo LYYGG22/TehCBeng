@@ -1,18 +1,65 @@
 [
     {
+        "id": "DOC_chargeback_procedure",
+        "text": "Chargeback Handling Procedure\nDocument Version: 1.0 | Effective Date: 20 August 2026\n1. Purpose\nThis procedure explains how to respond when a customer disputes a completed transaction through their card issuer (a chargeback), as distinct from a direct refund request made to us.\n2. When a Chargeback Applies\nThe customer disputes a charge directly with their bank rather than contacting support first.\nThe dispute is filed after a transaction has already completed and settled.\nThe customer claims the service was not delivered, or does not recognize the charge.\n3. Handling Steps\nVerify: Confirm the transaction exists and check delivery\/usage records.\nGather Evidence: Collect delivery confirmation, login\/usage logs, and prior support correspondence.\nRespond: Submit evidence to the card network within the issuer deadline, typically 7-14 days.\nRecord: Log the chargeback outcome and evidence packet on the case file.\n4. Related Pattern\nChargebacks filed on services the customer continued using after the dispute was raised should be treated as a possible friendly-fraud pattern and cross-checked against usage logs before evidence is submitted.",
+        "source_file": "chargeback_procedure.docx",
+        "access_level": null,
+        "last_updated": "2026-08-20"
+    },
+    {
+        "id": "DOC_customer_communication_templates",
+        "text": "Customer Communication Templates\nEffective Date: 20 August 2026\n1. Initial Acknowledgement\nThank you for reporting this to us. We have opened an investigation into the\nactivity you flagged and will keep you updated as we review it. In the\nmeantime, no further action is needed from you.\n2. Requesting Additional Evidence\nTo continue investigating your case, could you please provide any of the\nfollowing: a screenshot of the transaction, any related emails or messages,\nand the approximate time the activity occurred.\n3. Resolution Notification\nYour case has been resolved. Based on our review, the affected funds have\nbeen restored to your account. Please allow 3-5 business days for the\nbalance to reflect. Thank you for your patience.\n4. Usage Note\nAdjust the tone and specifics to match the case; these are starting points,\nnot scripts to be used word for word.",
+        "source_file": "customer_communication_templates.pdf",
+        "access_level": null,
+        "last_updated": "2026-08-20"
+    },
+    {
+        "id": "DOC_device_verification_guide",
+        "text": "Device and Browser Verification Guide (Internal)\nDocument Version: 1.0 | Effective Date: 20 August 2026 | Access: Manager\n1. Purpose\nInternal reference for evaluating device fingerprint and browser session signals during account takeover review. Distribution is limited to management to avoid publicizing the exact detection thresholds used.\n2. Signals Reviewed\nDevice ID mismatch against the account&#039;s known device history.\nBrowser or user-agent change within the same session.\nIP geolocation inconsistent with the account&#039;s recent activity.\nSession token reuse across two different device fingerprints.\n3. Escalation Thresholds\nOne new signal: log only, no action required.\nTwo new signals within the same session: require step-up verification (OTP).\nThree or more new signals combined with a high-value action: auto-hold and escalate to Account Security.\n4. Handling Note\nThese thresholds are intentionally not shared with front-line staff scripts or customer-facing material, since detailed knowledge of the exact trigger counts could be used to stay under them.",
+        "source_file": "device_verification_guide.docx",
+        "access_level": "manager",
+        "last_updated": "2026-08-20"
+    },
+    {
+        "id": "DOC_escalation_matrix",
+        "text": "Fraud Escalation Contact Matrix (Internal)\nEffective Date: 20 August 2026 | Access: Manager\nSeverity: Low\nHandled by: Assigned case owner. SLA: 3 business days. Escalate to: N\/A.\nSeverity: Medium\nHandled by: Department lead (see recommended department on the case).\nSLA: 1 business day. Escalate to: Fraud Operations Manager.\nSeverity: High\nHandled by: Fraud Operations Manager. SLA: 4 hours.\nEscalate to: Head of Risk, then Compliance if funds cannot be recovered.\nNote\nThis contact matrix is for internal routing only and should not be shared\nin customer-facing communication.",
+        "source_file": "escalation_matrix.pdf",
+        "access_level": "manager",
+        "last_updated": "2026-08-20"
+    },
+    {
         "id": "DOC_fraud_handling",
         "text": "Fraud Handling Procedure\nDocument Version: 1.0 | Effective Date: 17 August 2026\n1. Purpose\nThis procedure provides a simple workflow for identifying, reviewing, documenting, and resolving potentially fraudulent transactions.\n2. Fraud Indicators\nMultiple transactions using unusual payment patterns.\nRepeated failed payment attempts followed by a successful transaction.\nUnexpected changes to customer or payment information.\nTransactions that do not match the customer&#039;s normal activity.\n3. Handling Steps\nDetect: Flag the transaction using system alerts or manual review.\nReview: Check transaction details, account history, timestamps, and supporting evidence.\nRestrict: If necessary, temporarily hold the transaction while the investigation is ongoing.\nEscalate: Send suspicious or high-risk cases to the responsible fraud\/risk team.\nResolve: Approve, reject, refund, or release the transaction based on the investigation.\nRecord: Document the decision, evidence reviewed, and action taken.\n4. Example Case\nTransaction TXN-20260817-003 was flagged after several failed payment attempts followed by a successful payment from a new device. The transaction should be reviewed, supporting evidence collected, and escalated if the activity cannot be verified.\n5. Important Note\nStaff should avoid making assumptions based only on a single indicator. A transaction should be assessed using the available evidence and the organization&#039;s fraud controls.",
-        "source_file": "fraud_handling.docx"
+        "source_file": "fraud_handling.docx",
+        "access_level": null,
+        "last_updated": "2026-08-18"
+    },
+    {
+        "id": "DOC_high_risk_merchant_watchlist",
+        "text": "Merchant Name | Category | Risk Level | Reason Flagged | Date Added\nQuickCoin Exchange | Digital Goods | High | Multiple chargebacks within 30 days | 2026-06-02\nGlobalGift Cards Ltd | Gift Cards | High | Linked to romance-scam payout pattern | 2026-07-18\nNightOwl Electronics | Electronics | Medium | Repeated refund-abuse pattern | 2026-07-30\nFastFund Transfers | Money Transfer | High | Recurring money-mule destination | 2026-08-05",
+        "source_file": "high_risk_merchant_watchlist.xlsx",
+        "access_level": null,
+        "last_updated": "2026-08-20"
+    },
+    {
+        "id": "DOC_monthly_fraud_summary",
+        "text": "Month | Total Cases | Resolved | In Progress | Open | Flagged Transactions\nMay 2026 | 9 | 7 | 1 | 1 | 12\nJune 2026 | 11 | 8 | 2 | 1 | 15\nJuly 2026 | 14 | 9 | 3 | 2 | 19\nAugust 2026 | 16 | 6 | 4 | 6 | 22",
+        "source_file": "monthly_fraud_summary.xlsx",
+        "access_level": null,
+        "last_updated": "2026-08-20"
     },
     {
         "id": "DOC_refund_policy",
         "text": "Refund Policy\nEffective Date: 17 August 2026\n1. Overview\nThis policy explains how customers may request refunds for eligible transactions. Refund requests are reviewed\nbased on the transaction status, payment method, and reason provided.\n2. Eligible Refunds\nA refund may be considered when a transaction was duplicated, incorrectly charged, cancelled before\nfulfillment, or affected by a verified system\/payment error.\n3. Non-Eligible Refunds\nRefunds may be rejected for completed services, unauthorized requests without supporting information, or\nrequests submitted outside the applicable refund period.\n4. Processing Time\nApproved refunds are normally processed within 5\u201310 business days. The time required for the funds to appear\nmay depend on the customer's bank or payment provider.\n5. Refund Request Information\nRequired Information\tExample\nTransaction ID\tTXN-20260817-001\nCustomer Name\tJohn Tan\nReason\tDuplicate payment\nSupporting Evidence\tPayment receipt \/ screenshot\n6. Contact\nCustomers should contact the support team with the transaction ID and relevant evidence when submitting a\nrefund request.",
-        "source_file": "refund_policy.pdf"
+        "source_file": "refund_policy.pdf",
+        "access_level": null,
+        "last_updated": "2026-08-18"
     },
     {
         "id": "DOC_transaction_log",
         "text": "Transaction ID | Date | Customer | Amount (MYR) | Payment Method | Status | Fraud Flag | Remarks\nTXN-20260817-001 | 2026-08-17 | John Tan | 120 | Credit Card | Completed | No | Normal transaction\nTXN-20260817-002 | 2026-08-17 | Alice Lim | 85.5 | Online Banking | Refunded | No | Duplicate payment\nTXN-20260817-003 | 2026-08-17 | Michael Lee | 450 | Credit Card | Under Review | Yes | Multiple failed attempts\nTXN-20260816-004 | 2026-08-16 | Sarah Wong | 210 | E-Wallet | Completed | No | Verified\nTXN-20260816-005 | 2026-08-16 | David Tan | 999 | Credit Card | Blocked | Yes | Unusual activity",
         "source_file": "transaction_log.xlsx",
-        "access_level": "manager"
+        "access_level": null,
+        "last_updated": "2026-08-17"
     }
 ]

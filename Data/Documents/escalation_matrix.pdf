@@ -1,0 +1,46 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 4 0 R >> >> /MediaBox [0 0 612 792] /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 1033 >>
+stream
+BT
+/F1 14 Tf 1 0 0 1 50 750 Tm (Fraud Escalation Contact Matrix \(Internal\)) Tj
+/F1 10.5 Tf 1 0 0 1 50 730 Tm (Effective Date: 20 August 2026 | Access: Manager) Tj
+/F1 14 Tf 1 0 0 1 50 704 Tm (Severity: Low) Tj
+/F1 10.5 Tf 1 0 0 1 50 684 Tm (Handled by: Assigned case owner. SLA: 3 business days. Escalate to: N/A.) Tj
+/F1 14 Tf 1 0 0 1 50 658 Tm (Severity: Medium) Tj
+/F1 10.5 Tf 1 0 0 1 50 638 Tm (Handled by: Department lead \(see recommended department on the case\).) Tj
+/F1 10.5 Tf 1 0 0 1 50 624 Tm (SLA: 1 business day. Escalate to: Fraud Operations Manager.) Tj
+/F1 14 Tf 1 0 0 1 50 598 Tm (Severity: High) Tj
+/F1 10.5 Tf 1 0 0 1 50 578 Tm (Handled by: Fraud Operations Manager. SLA: 4 hours.) Tj
+/F1 10.5 Tf 1 0 0 1 50 564 Tm (Escalate to: Head of Risk, then Compliance if funds cannot be recovered.) Tj
+/F1 14 Tf 1 0 0 1 50 538 Tm (Note) Tj
+/F1 10.5 Tf 1 0 0 1 50 518 Tm (This contact matrix is for internal routing only and should not be shared) Tj
+/F1 10.5 Tf 1 0 0 1 50 504 Tm (in customer-facing communication.) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1396
+%%EOF

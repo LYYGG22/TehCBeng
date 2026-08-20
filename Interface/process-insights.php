@@ -74,6 +74,7 @@ if ($currentRole !== 'Manager'):
 												<th>Asked</th>
 												<th>By</th>
 												<th>Confidence</th>
+												<th></th>
 											</tr>
 										</thead>
 										<tbody id="chatGapsTable"></tbody>
