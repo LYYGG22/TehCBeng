@@ -64,10 +64,10 @@ if ($action === 'forward') {
     ];
     $department = $departments[$case['type'] ?? ''] ?? 'Fraud Operations';
     $_SESSION['case_updates'][$caseId] = array_merge($_SESSION['case_updates'][$caseId] ?? [], [
-        'status' => 'Open',
+        'status' => 'In Progress',
         'assigned_department' => $department,
     ]);
-    echo json_encode(['success' => true, 'status' => 'Open', 'department' => $department, 'message' => "Case {$caseId} has been sent to {$department}."]);
+    echo json_encode(['success' => true, 'status' => 'In Progress', 'department' => $department, 'message' => "Case {$caseId} has been sent to {$department} and is now in progress."]);
     exit;
 }
 

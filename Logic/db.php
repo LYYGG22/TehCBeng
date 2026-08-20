@@ -202,6 +202,6 @@ function syncKnowledgeBaseFromJson(PDO $db)
         $originalMessage = $c['original_message'] ?? '';
         $severity = $c['severity'] ?? 'Medium';
         $type = $c['type'] ?? 'Fraud Investigation';
-        $caseStmt->execute([$c['id'], "Case {$c['id']}", deriveCaseStatus($text), $severity, $type, $text, $originalMessage, $c['access_level'] ?? null]);
+        $caseStmt->execute([$c['id'], "Case {$c['id']}", $c['status'] ?? deriveCaseStatus($text), $severity, $type, $text, $originalMessage, $c['access_level'] ?? null]);
     }
 }

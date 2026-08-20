@@ -161,7 +161,7 @@ function formatCase(array $item): array
     $text = $item['text'];
     $caseId = $item['id'];
     $caseUpdates = $_SESSION['case_updates'][$caseId] ?? [];
-    $status = $caseUpdates['status'] ?? getCaseStatus($text);
+    $status = $caseUpdates['status'] ?? $item['status'] ?? getCaseStatus($text);
     $severity = $item['severity'] ?? $item['risk_level'] ?? getCaseSeverity($text);
     $type = $item['type'] ?? $item['fraud_type'] ?? getCaseType($text);
 

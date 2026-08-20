@@ -8,7 +8,7 @@ function loadAllDocs() {
     $db = getDB();
     $docs = [];
 
-    $cases = $db->query("SELECT case_id AS id, raw_details AS text, original_message, access_level, fraud_type, risk_level FROM cases")->fetchAll();
+    $cases = $db->query("SELECT case_id AS id, raw_details AS text, original_message, status, access_level, fraud_type, risk_level FROM cases")->fetchAll();
     foreach ($cases as $row) {
         $row['source'] = 'fraud_cases';
         $docs[] = $row;

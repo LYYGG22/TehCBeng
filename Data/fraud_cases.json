@@ -3,6 +3,7 @@
     "id": "FC001",
     "type": "Account Takeover",
     "severity": "High",
+    "status": "In Progress",
     "text": "Case: Customer reported unauthorized $2,500 transfer to new payee added same day. Resolution: Reversed, account locked.",
     "original_message": "Hi, I just saw a $2,500 transfer leave my account to a payee I do not recognize. I did not add this person today and I did not authorize the payment. Please stop it and help me get my money back."
   },
@@ -17,6 +18,7 @@
     "id": "FC003",
     "type": "Merchant Refund Abuse",
     "severity": "High",
+    "status": "In Progress",
     "text": "Case: Three refunds were issued to the same customer profile within 20 minutes after a rapid sequence of high-value purchases from a single merchant. Resolution: Merchant account frozen and refunds reversed.",
     "original_message": "We processed three refunds to the same customer in about 20 minutes after a run of high-value purchases in our store. This does not look like normal customer behaviour. Please review the merchant activity and those refunds."
   },
@@ -68,6 +70,7 @@
     "id": "FC010",
     "type": "Friendly Fraud",
     "severity": "Medium",
+    "status": "In Progress",
     "text": "Case: Customer filed a $920 chargeback on a completed digital purchase while still using the service. Resolution: Chargeback evidence packed and claim disputed.",
     "original_message": "I want a chargeback of $920. I do not recognize this merchant charge even though the service shows as delivered. Please refund me and close the transaction."
   },

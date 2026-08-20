@@ -78,7 +78,7 @@ function escapeHtml(text) {
 
 function badgeClass(value, type) {
 	const map = {
-		status: { Open: "badge-open", Resolved: "badge-resolved" },
+		status: { Open: "badge-open", "In Progress": "badge-in-progress", Resolved: "badge-resolved" },
 		severity: { High: "badge-high", Medium: "badge-medium", Low: "badge-low" },
 		risk: { High: "badge-flagged", Low: "badge-clear" },
 	};
@@ -472,9 +472,18 @@ function renderCaseDetail(caseId) {
 	`;
 
 	const isResolved = caseData.status === "Resolved";
-	document.getElementById("caseDetailActionHelper").textContent = needsDepartmentRecommendation
-		? `This ${caseData.severity.toLowerCase()}-severity case should be handled by ${recommendedDepartment}.`
-		: "Resolve the case when the investigation is complete, or route it to the responsible department.";
+	const isInProgress = caseData.status === "In Progress";
+	const actionButtons = document.querySelector("#caseDetailActionsSection .case-actions");
+	const assignedDepartment = caseData.assigned_department || recommendedDepartment;
+	document.getElementById("caseDetailActionsTitle").textContent = isInProgress ? "Department Routing" : isResolved ? "Case Status" : "Case Actions";
+	document.getElementById("caseDetailActionHelper").textContent = isResolved
+		? "This case has been resolved. No further action is required."
+		: isInProgress
+			? `Case sent to ${assignedDepartment} department and currently in progress.`
+		: needsDepartmentRecommendation
+			? `This ${caseData.severity.toLowerCase()}-severity case should be handled by ${recommendedDepartment}.`
+			: "Resolve the case when the investigation is complete, or route it to the responsible department.";
+	actionButtons.hidden = isInProgress || isResolved;
 	document.getElementById("resolveCaseBtn").disabled = isResolved;
 	document.getElementById("resolveCaseBtn").textContent = isResolved ? "Case resolved" : "Mark as resolved";
 	document.getElementById("forwardCaseBtn").disabled = isResolved;
