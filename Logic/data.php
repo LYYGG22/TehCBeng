@@ -40,6 +40,9 @@ switch ($action) {
     case 'chat_gaps':
         handleChatGaps();
         break;
+    case 'delete_chat_log':
+        handleDeleteChatLog();
+        break;
     default:
         http_response_code(400);
         echo json_encode(['error' => 'Invalid action']);
@@ -348,7 +351,7 @@ function handleChatGaps(): void
     $totalLowConfidence = (int) $countStmt->fetch()['c'];
 
     $listStmt = $db->prepare(
-        'SELECT asked_at, role, query, confidence FROM chat_log
+        'SELECT id, asked_at, role, query, confidence FROM chat_log
          WHERE confidence < ? AND restricted_count = 0
          ORDER BY asked_at DESC
          LIMIT 30'
@@ -360,6 +363,31 @@ function handleChatGaps(): void
         'total_low_confidence' => $totalLowConfidence,
         'questions' => $listStmt->fetchAll(),
     ]);
+}
+
+// Lets a manager clear out noise from the log (e.g. someone testing the
+// chatbot with gibberish) so it doesn't permanently skew the gap totals.
+function handleDeleteChatLog(): void
+{
+    $role = $_SESSION['user']['role'] ?? 'Staff';
+    if ($role !== 'Manager') {
+        http_response_code(403);
+        echo json_encode(['error' => 'Manager access required.']);
+        return;
+    }
+
+    $payload = json_decode(file_get_contents('php://input'), true) ?: [];
+    $id = (int) ($payload['id'] ?? 0);
+    if ($id <= 0) {
+        http_response_code(400);
+        echo json_encode(['error' => 'A valid log id is required.']);
+        return;
+    }
+
+    $stmt = getDB()->prepare('DELETE FROM chat_log WHERE id = ?');
+    $stmt->execute([$id]);
+
+    echo json_encode(['success' => true]);
 }
 
 function getPolicyCategory(string $text): string

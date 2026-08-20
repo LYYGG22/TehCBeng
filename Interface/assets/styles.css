@@ -1640,7 +1640,7 @@ button.activity-item:focus-visible {
 	margin-bottom: 0;
 }
 
-.report-finding strong {
+.report-finding > strong {
 	display: block;
 	font-size: 0.875rem;
 	margin-bottom: 0.25rem;
@@ -1656,6 +1656,57 @@ button.activity-item:focus-visible {
 .report-finding.warning { border-left-color: var(--ih-warning); }
 .report-finding.success { border-left-color: var(--ih-success); }
 .report-finding.info { border-left-color: var(--ih-accent); }
+
+/* Process Insights: automation-candidate rows expand into an AI Suggestion
+   panel on click, with a hover cue so the interaction is discoverable. */
+.insight-row {
+	cursor: pointer;
+	transition: background 0.15s;
+}
+
+.insight-row:hover,
+.insight-row.insight-row-active {
+	background: var(--ih-bg);
+}
+
+.insight-hint {
+	opacity: 0.55;
+	font-size: 0.8125rem;
+	transition: opacity 0.15s;
+}
+
+.insight-row:hover .insight-hint {
+	opacity: 1;
+}
+
+.insight-suggestion-row td {
+	padding: 0 0 1rem;
+	border-top: none;
+}
+
+.insight-suggestion-row .report-finding {
+	margin: 0 0.25rem;
+}
+
+.btn-delete-row {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border: 1px solid var(--ih-border);
+	border-radius: var(--ih-radius-sm);
+	background: var(--ih-surface);
+	color: var(--ih-muted);
+	cursor: pointer;
+	transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.btn-delete-row:hover {
+	border-color: var(--ih-danger);
+	background: #fef2f2;
+	color: var(--ih-danger);
+}
 
 .report-actions {
 	margin: 0;
