@@ -210,6 +210,9 @@ function renderDashboard() {
 
 	const activities = [
 		...cases.map((c) => ({
+			type: "case",
+			record: c,
+			sortOrder: recordNumber(c.id),
 			dot: c.severity === "High" ? "red" : c.severity === "Low" ? "green" : "amber",
 			text: `Case ${c.id}: ${c.type}`,
 			meta: `${c.status} · ${c.severity} severity`,
@@ -217,24 +220,39 @@ function renderDashboard() {
 		...transactions
 			.filter((t) => t.flagged)
 			.map((t) => ({
+				type: "transaction",
+				record: t,
+				sortOrder: recordNumber(t.id),
 				dot: "red",
 				text: `Transaction ${t.id} flagged`,
 				meta: `$${t.amount} · High risk`,
 			})),
-	];
+	].sort((a, b) => b.sortOrder - a.sortOrder).slice(0, 5);
 
 	document.getElementById("activityList").innerHTML = activities
 		.map(
 			(a) => `
-		<div class="activity-item">
+		<button type="button" class="activity-item clickable" data-activity-type="${a.type}" data-record-id="${escapeHtml(a.record.id)}" title="View ${escapeHtml(a.record.id)} details">
 			<div class="activity-dot ${a.dot}"></div>
 			<div>
 				<div class="activity-text">${escapeHtml(a.text)}</div>
 				<div class="activity-meta">${escapeHtml(a.meta)}</div>
 			</div>
-		</div>`
+		</button>`
 		)
-		.join("");
+		.join("") || `<div class="empty-state">No recent activity in your access scope.</div>`;
+
+	document.querySelectorAll("#activityList [data-activity-type]").forEach((item) => {
+		item.addEventListener("click", () => {
+			const id = item.dataset.recordId;
+			if (item.dataset.activityType === "case") {
+				openCaseDetail(id, "dashboard");
+			} else {
+				const transaction = transactions.find((t) => t.id === id);
+				if (transaction) openRecordDetail({ ...transaction, type: "Transaction" }, "dashboard");
+			}
+		});
+	});
 
 	const flagged = transactions.filter((t) => t.flagged);
 	document.getElementById("flaggedTable").innerHTML =
@@ -242,7 +260,7 @@ function renderDashboard() {
 			? flagged
 					.map(
 						(t) => `
-			<tr>
+			<tr class="clickable" data-transaction-id="${escapeHtml(t.id)}" title="View ${escapeHtml(t.id)} details">
 				<td><strong>${escapeHtml(t.id)}</strong></td>
 				<td>$${escapeHtml(t.amount)}</td>
 				<td><span class="badge ${badgeClass(t.risk, "risk")}">${t.risk}</span></td>
@@ -251,16 +269,48 @@ function renderDashboard() {
 					.join("")
 			: `<tr><td colspan="3" style="text-align:center;color:var(--ih-muted)">No flagged transactions</td></tr>`;
 
-	document.getElementById("policiesTable").innerHTML = policies
+	document.querySelectorAll("#flaggedTable tr[data-transaction-id]").forEach((row) => {
+		row.addEventListener("click", () => {
+			const transaction = transactions.find((t) => t.id === row.dataset.transactionId);
+			if (transaction) openRecordDetail({ ...transaction, type: "Transaction" }, "dashboard");
+		});
+	});
+
+	const activePolicies = policies
+		.map((policy) => ({
+			...policy,
+			usedIn: cases.filter((caseData) =>
+				casePolicyMatches(caseData).some((matched) => matched.id === policy.id)
+			).length,
+		}))
+		.filter((policy) => policy.usedIn > 0)
+		.sort((a, b) => b.usedIn - a.usedIn || a.id.localeCompare(b.id));
+
+	document.getElementById("policiesTable").innerHTML = activePolicies.length
+		? activePolicies
 		.map(
 			(p) => `
-		<tr>
+		<tr class="clickable" data-policy-id="${escapeHtml(p.id)}" title="View ${escapeHtml(p.id)} details">
 			<td><strong>${escapeHtml(p.id)}</strong></td>
 			<td>${escapeHtml(p.category)}</td>
+			<td>${p.usedIn} case${p.usedIn === 1 ? "" : "s"}</td>
 			<td>${escapeHtml(p.summary)}</td>
 		</tr>`
 		)
-		.join("");
+		.join("")
+		: `<tr><td colspan="4" style="text-align:center;color:var(--ih-muted)">No active policies in your access scope</td></tr>`;
+
+	document.querySelectorAll("#policiesTable tr[data-policy-id]").forEach((row) => {
+		row.addEventListener("click", () => {
+			const policy = policies.find((p) => p.id === row.dataset.policyId);
+			if (policy) openRecordDetail({ ...policy, type: "Policy" }, "dashboard");
+		});
+	});
+}
+
+function recordNumber(id) {
+	const match = String(id).match(/(\d+)$/);
+	return match ? Number(match[1]) : 0;
 }
 
 function renderCases(filter = "all") {
@@ -303,6 +353,9 @@ function openCaseDetail(caseId, returnView = "cases") {
 				? "← Back to Analysis & Report"
 				: "← Back to Cases";
 	renderCaseDetail(caseId);
+	if (returnView === "dashboard") {
+		document.getElementById("backFromCaseDetailBtn").textContent = "← Back to Dashboard";
+	}
 	navigateTo("caseDetail");
 }
 
@@ -342,6 +395,9 @@ function openRecordDetail(record, returnView = "knowledge") {
 	recordDetailReturnView = returnView;
 	document.getElementById("backFromRecordDetailBtn").textContent = "← Back to Search Results";
 	renderRecordDetail(record);
+	if (returnView === "dashboard") {
+		document.getElementById("backFromRecordDetailBtn").textContent = "← Back to Dashboard";
+	}
 	navigateTo("recordDetail");
 }
 

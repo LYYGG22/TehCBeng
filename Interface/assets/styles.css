@@ -1201,6 +1201,24 @@ body {
 	align-items: flex-start;
 }
 
+button.activity-item {
+	width: 100%;
+	padding: 0.25rem;
+	border: 0;
+	border-radius: var(--ih-radius-sm);
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+button.activity-item:hover,
+button.activity-item:focus-visible {
+	background: #f8fafc;
+	outline: none;
+}
+
 .activity-dot {
 	width: 8px;
 	height: 8px;
@@ -1211,6 +1229,7 @@ body {
 
 .activity-dot.red { background: var(--ih-danger); }
 .activity-dot.amber { background: var(--ih-warning); }
+.activity-dot.green { background: var(--ih-success); }
 .activity-dot.blue { background: var(--ih-accent); }
 
 .activity-text {
@@ -1260,6 +1279,10 @@ body {
 
 .data-table tr:hover td {
 	background: #f8fafc;
+}
+
+.data-table tr.clickable {
+	cursor: pointer;
 }
 
 /* Badges */
