@@ -1455,10 +1455,37 @@ body {
 
 /* Reports */
 
+.report-toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	margin-bottom: 1.25rem;
+	flex-wrap: wrap;
+}
+
+.report-toolbar-note {
+	font-size: 0.8125rem;
+	color: var(--ih-muted);
+}
+
 .report-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 	gap: 1.25rem;
+}
+
+.report-split {
+	display: grid;
+	grid-template-columns: 1.2fr 0.8fr;
+	gap: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.card-header-note {
+	font-size: 0.75rem;
+	color: var(--ih-muted);
+	font-weight: 500;
 }
 
 .report-card {
@@ -1489,9 +1516,12 @@ body {
 
 .bar-label {
 	font-size: 0.8125rem;
-	width: 120px;
+	width: 148px;
 	flex-shrink: 0;
 	color: var(--ih-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .bar-track {
@@ -1528,6 +1558,51 @@ body {
 
 .report-summary strong {
 	color: var(--ih-text);
+}
+
+.report-finding {
+	border: 1px solid var(--ih-border);
+	border-left-width: 4px;
+	border-radius: var(--ih-radius-sm);
+	padding: 0.875rem 1rem;
+	margin-bottom: 0.75rem;
+	background: var(--ih-bg);
+}
+
+.report-finding:last-child {
+	margin-bottom: 0;
+}
+
+.report-finding strong {
+	display: block;
+	font-size: 0.875rem;
+	margin-bottom: 0.25rem;
+}
+
+.report-finding p {
+	font-size: 0.8125rem;
+	color: var(--ih-muted);
+	line-height: 1.5;
+}
+
+.report-finding.danger { border-left-color: var(--ih-danger); }
+.report-finding.warning { border-left-color: var(--ih-warning); }
+.report-finding.success { border-left-color: var(--ih-success); }
+.report-finding.info { border-left-color: var(--ih-accent); }
+
+.report-actions {
+	margin: 0;
+	padding-left: 1.25rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.625rem;
+	font-size: 0.875rem;
+	color: var(--ih-text);
+}
+
+.report-actions li::marker {
+	color: var(--ih-accent);
+	font-weight: 600;
 }
 
 .btn-outline {
@@ -1576,7 +1651,8 @@ body {
 
 @media (max-width: 1024px) {
 	.content-grid,
-	.knowledge-layout {
+	.knowledge-layout,
+	.report-split {
 		grid-template-columns: 1fr;
 	}
 
