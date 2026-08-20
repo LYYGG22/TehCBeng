@@ -202,13 +202,9 @@
     "severity": "Medium",
     "text": "Case: A property manager paid a fake maintenance invoice sent from a look-alike email address after the real contractor's inbox was taken over, redirecting the funds to a different bank account.",
     "original_message": "We got an invoice from what looked like our usual contractor, but their email had been taken over. We paid it and only later realized the bank account was different from their real one and the real contractor never got our funds."
-  }
-]
-"access_level": "manager",
-    "original_message": "My wallet shows $7,200 spent in another country while I am at home. I did not travel and I did not approve these payments. Please freeze the wallet and recover the money."
   },
   {
-    "id": "FC017",
+    "id": "FC029",
     "type": "Account Takeover",
     "severity": "High",
     "status": "Open",
@@ -216,7 +212,7 @@
     "original_message": "I was locked out of my account this morning and received a notification for an $8,400 transfer to someone I do not know. I did not change my password or add this payee. Please stop the transfer immediately."
   },
   {
-    "id": "FC018",
+    "id": "FC030",
     "type": "Identity Theft",
     "severity": "High",
     "status": "Open",
@@ -224,7 +220,7 @@
     "original_message": "I received a credit application notice for $12,000 but I did not apply for anything. My passport was stolen last week. Please freeze this application and investigate."
   },
   {
-    "id": "FC019",
+    "id": "FC031",
     "type": "Geo-Velocity Anomaly",
     "severity": "High",
     "status": "Open",
@@ -232,7 +228,7 @@
     "original_message": "I am at home in Kuala Lumpur, but I received alerts for card purchases in Tokyo and Paris. I have not travelled and still have my card. Please block all activity."
   },
   {
-    "id": "FC020",
+    "id": "FC032",
     "type": "Phishing",
     "severity": "Medium",
     "status": "In Progress",
@@ -240,7 +236,7 @@
     "original_message": "I entered my OTP on a page that looked like bank support. Soon after, I saw a $1,900 transfer attempt. I called as soon as I noticed it."
   },
   {
-    "id": "FC021",
+    "id": "FC033",
     "type": "Merchant Refund Abuse",
     "severity": "High",
     "status": "In Progress",
@@ -248,7 +244,7 @@
     "original_message": "Our finance team noticed repeated large refunds to linked customer profiles after purchases were made today. We have paused the refunds and need help reviewing the merchant."
   },
   {
-    "id": "FC022",
+    "id": "FC034",
     "type": "SIM Swap",
     "severity": "High",
     "status": "In Progress",
