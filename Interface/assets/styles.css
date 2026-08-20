@@ -2135,6 +2135,33 @@ button.activity-item:focus-visible {
 	border-left: 4px solid var(--ih-accent);
 }
 
+.case-actions {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
+.case-action-button {
+	border: 0;
+	border-radius: var(--ih-radius-sm);
+	padding: 0.7rem 1rem;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.case-action-button.resolve { background: var(--ih-success); color: #fff; }
+.case-action-button.forward { background: var(--ih-accent); color: #fff; }
+.case-action-button:disabled { opacity: 0.6; cursor: not-allowed; }
+.action-helper, .case-action-feedback { margin: 0 0 1rem; color: var(--ih-muted); }
+.case-action-feedback { margin: 1rem 0 0; font-weight: 500; }
+.case-action-feedback.success { color: var(--ih-success); }
+.case-action-feedback.error { color: var(--ih-danger); }
+
+@media (max-width: 560px) {
+	.case-action-button { width: 100%; }
+}
+
 .policy-id {
 	font-size: 0.8125rem;
 	font-weight: 700;
