@@ -65,10 +65,21 @@ foreach ($files as $file) {
         }
 
         if (trim($text) !== '') {
+            // Documents can declare their own restriction inline (e.g. "Access: Manager"),
+            // the same way internal policy docs do. Without this, that access_level never
+            // reaches the 'access_level' column other sources (cases/policies/transactions)
+            // already use, so canAccessDocument() in retrieve_data.php has nothing to gate
+            // on and the chatbot can surface "Manager"-only content to any role.
+            $accessLevel = null;
+            if (preg_match('/access:\s*(admin|manager|staff)/i', $text, $accessMatch)) {
+                $accessLevel = strtolower($accessMatch[1]);
+            }
+
             $extracted[] = [
                 'id' => 'DOC_' . pathinfo($file, PATHINFO_FILENAME),
                 'text' => trim($text),
                 'source_file' => $file,
+                'access_level' => $accessLevel,
                 'last_updated' => date('Y-m-d', filemtime($path))
             ];
             echo "Extracted: $file\n";

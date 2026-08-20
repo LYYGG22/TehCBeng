@@ -121,6 +121,28 @@ async function logout() {
 
 // ── Document Viewer Modal ──
 
+// extract_documents.php formats each spreadsheet row as "cell | cell | cell",
+// one row per line — reconstruct that into an actual table instead of showing
+// the raw pipe-delimited text.
+function renderExcelPreview(text) {
+	const rows = String(text ?? "")
+		.split("\n")
+		.map((line) => line.trim())
+		.filter((line) => line !== "")
+		.map((line) => line.split("|").map((cell) => cell.trim()));
+
+	if (!rows.length) return `<div class="doc-modal-text">No data.</div>`;
+
+	const [header, ...body] = rows;
+	return `
+		<div class="table-wrapper">
+			<table class="data-table">
+				<thead><tr>${header.map((cell) => `<th>${escapeHtml(cell)}</th>`).join("")}</tr></thead>
+				<tbody>${body.map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`).join("")}</tbody>
+			</table>
+		</div>`;
+}
+
 async function openDocumentViewer(docId) {
 	const overlay = document.getElementById("docModalOverlay");
 	const titleEl = document.getElementById("docModalTitle");
@@ -158,6 +180,12 @@ async function openDocumentViewer(docId) {
 			bodyEl.innerHTML = `<iframe src="${data.file_url}" title="${escapeHtml(data.title)}"></iframe>`;
 			openFileBtn.href = data.file_url;
 			openFileBtn.classList.remove("hidden");
+		} else if (data.preview_type === "excel") {
+			bodyEl.innerHTML = renderExcelPreview(data.text);
+			if (data.file_url) {
+				openFileBtn.href = data.file_url;
+				openFileBtn.classList.remove("hidden");
+			}
 		} else {
 			bodyEl.innerHTML = `<div class="doc-modal-text">${escapeHtml(data.text)}</div>`;
 			if (data.file_url) {
