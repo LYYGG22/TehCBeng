@@ -22,6 +22,15 @@ if (!isset($_SESSION['user'])) {
 }
 
 require_once __DIR__ . '/retrieve_data.php';
+require_once __DIR__ . '/env.php';
+loadEnv();
+
+$apiKey = getenv('OPENROUTER_API_KEY');
+if (!$apiKey) {
+    http_response_code(500);
+    echo json_encode(['error' => 'OPENROUTER_API_KEY is not set. Copy .env.example to .env and add your key.']);
+    exit;
+}
 
 $data = json_decode(file_get_contents('php://input'), true);
 $userQuery = $data['query'] ?? '';
@@ -41,8 +50,6 @@ if (empty($relevantDocs)) {
         $context .= "- [{$doc['id']}] {$doc['text']}\n";
     }
 }
-
-$apiKey = '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';
 
 $prompt = "You are IntelliHub, a fraud investigation assistant. Use the following retrieved context to answer the user's question. Reference specific case/policy/transaction IDs where relevant.\n\nContext:\n$context\n\nUser question: $userQuery\n\nAnswer concisely. Format the answer in Markdown so it is easy to scan: use short paragraphs, '- ' bullet points for lists of findings or steps, numbered lists for ordered procedures, and **bold** for IDs and key terms. Do not put everything in one long line.";
 
