@@ -6,7 +6,6 @@
 		<title>IntelliHub Dashboard</title>
 		<link rel="stylesheet" href="assets/styles.css" />
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
-		<script src="assets/app.js"></script>
 	</head>
 	<body>
 		<div class="app-layout">
@@ -276,9 +275,14 @@
 					<section class="view-panel" id="view-reports">
 						<div class="report-toolbar">
 							<p class="report-toolbar-note" id="reportGeneratedAt"></p>
-							<button class="btn-outline" id="exportReportBtn">
-								Export Report
-							</button>
+							<div class="report-export-controls">
+								<label class="sr-only" for="reportExportFormat">Export format</label>
+								<select id="reportExportFormat" aria-label="Export report format">
+									<option value="pdf">PDF</option>
+									<option value="excel">Excel (.xls)</option>
+								</select>
+								<button class="btn-outline" id="exportReportBtn">Export Report</button>
+							</div>
 						</div>
 						<div class="stats-grid" id="reportKpis"></div>
 						<div class="report-grid">
@@ -302,8 +306,8 @@
 						<div class="report-split">
 							<div class="content-card">
 								<div class="card-header">
-									<h2>Priority Queue</h2>
-									<span class="card-header-note">Open cases, highest severity first</span>
+									<h2>Staff Priority Queue</h2>
+									<span class="card-header-note">Open cases awaiting staff action, highest severity first</span>
 								</div>
 								<div class="card-body" style="padding: 0">
 									<div class="table-wrapper">
@@ -595,6 +599,6 @@
 			</div>
 		</div>
 
-		<script src="assets/app.js"></script>
+		<script src="assets/app.js?v=visual-exports-5"></script>
 	</body>
 </html>
