@@ -1,4 +1,53 @@
 [
-  {"id": "TX001", "text": "Transaction TX001: amount $4800, time 2026-08-14 23:41, location Unknown VPN IP, flagged true", "access_level": "manager"},
-  {"id": "TX002", "text": "Transaction TX002: amount $20, location Local merchant, flagged false"}
+    {
+        "id": "TX001",
+        "text": "Transaction TX001: amount $4800, time 2026-08-14 23:41, location Unknown VPN IP, flagged true",
+        "access_level": "manager"
+    },
+    {
+        "id": "TX002",
+        "text": "Transaction TX002: amount $20, location Local merchant, flagged false",
+        "flagged_by": null
+    },
+    {
+        "id": "TX003",
+        "text": "Transaction TX003: amount $3200, time 2026-08-18 09:15, location London, United Kingdom, flagged true",
+        "flagged_by": "Manual"
+    },
+    {
+        "id": "TX004",
+        "text": "Transaction TX004: amount $48, time 2026-08-18 10:02, location Local merchant, flagged false"
+    },
+    {
+        "id": "TX005",
+        "text": "Transaction TX005: amount $6900, time 2026-08-19 14:27, location New device payout, flagged true"
+    },
+    {
+        "id": "TX006",
+        "text": "Transaction TX006: amount $180, time 2026-08-19 16:40, location Unknown sender transfer, flagged true",
+        "risk_level": "Medium",
+        "flagged_by": "Manual"
+    },
+    {
+        "id": "TX007",
+        "text": "Transaction TX007: amount $920, time 2026-08-20 08:55, location Digital goods merchant, flagged true",
+        "risk_level": "Medium"
+    },
+    {
+        "id": "TX008",
+        "text": "Transaction TX008: amount $650, time 2026-08-20 11:10, location New online merchant, flagged true",
+        "risk_level": "Medium"
+    },
+    {
+        "id": "TX009",
+        "text": "Transaction TX009: amount $75, time 2026-08-20 11:35, location Local merchant, flagged false",
+        "risk_level": "Low",
+        "flagged_by": null
+    },
+    {
+        "id": "TX010",
+        "text": "Transaction TX010: amount $350, time 2026-08-20 12:20, location New overseas online merchant, flagged true",
+        "risk_level": "Medium",
+        "flagged_by": "Manual"
+    }
 ]

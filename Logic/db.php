@@ -80,7 +80,8 @@ function initSchema(PDO $db) {
         CREATE TABLE transactions (
             id TEXT PRIMARY KEY,
             text TEXT NOT NULL,
-            access_level TEXT
+            access_level TEXT,
+            risk_level TEXT
         );
 
         CREATE TABLE company_documents (
@@ -146,6 +147,12 @@ function ensureSchema(PDO $db): void
     if (!in_array('original_message', $names, true)) {
         $db->exec("ALTER TABLE cases ADD COLUMN original_message TEXT NOT NULL DEFAULT ''");
     }
+
+    $transactionColumns = $db->query('PRAGMA table_info(transactions)')->fetchAll();
+    $transactionNames = array_map(fn($col) => $col['name'], $transactionColumns);
+    if (!in_array('risk_level', $transactionNames, true)) {
+        $db->exec('ALTER TABLE transactions ADD COLUMN risk_level TEXT');
+    }
 }
 
 function loadJsonRecords(string $path): array
@@ -181,9 +188,9 @@ function syncKnowledgeBaseFromJson(PDO $db)
     }
 
     $db->exec('DELETE FROM transactions');
-    $txStmt = $db->prepare('INSERT INTO transactions (id, text, access_level) VALUES (?, ?, ?)');
+    $txStmt = $db->prepare('INSERT INTO transactions (id, text, access_level, risk_level) VALUES (?, ?, ?, ?)');
     foreach (loadJsonRecords("$dataDir/transactions.json") as $t) {
-        $txStmt->execute([$t['id'], $t['text'] ?? '', $t['access_level'] ?? null]);
+        $txStmt->execute([$t['id'], $t['text'] ?? '', $t['access_level'] ?? null, $t['risk_level'] ?? null]);
     }
 
     $db->exec('DELETE FROM company_documents');

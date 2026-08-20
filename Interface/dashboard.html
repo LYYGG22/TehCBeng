@@ -216,13 +216,11 @@
 						</div>
 						<div class="content-card">
 							<div class="card-header">
-								<h2>Search Results</h2>
+								<h2>Recent Records & Search Results</h2>
 							</div>
 							<div class="card-body">
 								<div id="searchResults">
-									<div class="empty-state">
-										Enter a keyword to search the knowledge base
-									</div>
+									<div id="recentKnowledgeRecords"></div>
 								</div>
 							</div>
 						</div>
@@ -392,6 +390,9 @@
 									<h1 id="recordDetailId"></h1>
 									<span class="badge" id="recordDetailBadge"></span>
 								</div>
+								<button type="button" class="btn-outline transaction-detail-flag-btn" id="recordDetailFlagBtn" hidden>
+									<span>Flag Transaction</span>
+								</button>
 							</div>
 
 							<div class="case-detail-content">

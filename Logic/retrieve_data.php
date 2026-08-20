@@ -20,7 +20,7 @@ function loadAllDocs() {
         $docs[] = $row;
     }
 
-    $transactions = $db->query("SELECT id, text, access_level FROM transactions")->fetchAll();
+    $transactions = $db->query("SELECT id, text, access_level, risk_level FROM transactions")->fetchAll();
     foreach ($transactions as $row) {
         $row['source'] = 'transactions';
         $docs[] = $row;

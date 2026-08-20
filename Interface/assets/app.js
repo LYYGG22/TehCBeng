@@ -32,6 +32,7 @@ const VIEWS = {
 };
 
 let appData = null;
+let currentUser = null;
 let isLoading = false;
 let currentCaseFilter = "all";
 let currentSelectedCaseId = null;
@@ -60,6 +61,7 @@ async function checkAuth() {
 }
 
 function initUser(user) {
+	currentUser = user;
 	const initials = user.name
 		.split(" ")
 		.map((w) => w[0])
@@ -80,7 +82,7 @@ function badgeClass(value, type) {
 	const map = {
 		status: { Open: "badge-open", Resolved: "badge-resolved" },
 		severity: { High: "badge-high", Medium: "badge-medium", Low: "badge-low" },
-		risk: { High: "badge-flagged", Low: "badge-clear" },
+		risk: { High: "badge-flagged", Medium: "badge-medium", Low: "badge-clear" },
 	};
 	return map[type]?.[value] || "";
 }
@@ -163,7 +165,15 @@ function navigateTo(view) {
 
 function setupNavigation() {
 	document.querySelectorAll(".nav-item[data-view]").forEach((btn) => {
-		btn.addEventListener("click", () => navigateTo(btn.dataset.view));
+		btn.addEventListener("click", async () => {
+			if (btn.dataset.view === "dashboard") {
+				await loadData();
+				renderDashboard();
+				renderReports();
+				renderRecentKnowledge();
+			}
+			navigateTo(btn.dataset.view);
+		});
 	});
 
 	const hash = location.hash.replace("#", "");
@@ -174,39 +184,60 @@ function renderDashboard() {
 	const { stats, cases, transactions, policies } = appData;
 
 	document.getElementById("statsGrid").innerHTML = `
-		<div class="stat-card">
+		<button type="button" class="stat-card clickable" data-dashboard-action="all-cases" title="View all cases">
 			<div class="stat-card-header">
 				<span class="stat-label">Total Cases</span>
 				<div class="stat-icon blue">📋</div>
 			</div>
 			<div class="stat-value">${stats.total_cases}</div>
 			<div class="stat-change">${stats.open_cases} currently open</div>
-		</div>
-		<div class="stat-card">
+		</button>
+		<button type="button" class="stat-card clickable" data-dashboard-action="flagged-transactions" title="View flagged transactions">
 			<div class="stat-card-header">
 				<span class="stat-label">Flagged Transactions</span>
 				<div class="stat-icon red">⚠️</div>
 			</div>
 			<div class="stat-value">${stats.flagged_transactions}</div>
 			<div class="stat-change">of ${stats.total_transactions} total</div>
-		</div>
-		<div class="stat-card">
+		</button>
+		<button type="button" class="stat-card clickable" data-dashboard-action="active-policies" title="View active policies">
 			<div class="stat-card-header">
 				<span class="stat-label">Active Policies</span>
 				<div class="stat-icon green">📜</div>
 			</div>
-			<div class="stat-value">${stats.policies}</div>
-			<div class="stat-change">compliance rules enforced</div>
-		</div>
-		<div class="stat-card">
+			<div class="stat-value" id="activePoliciesValue">${stats.policies}</div>
+			<div class="stat-change">policies used in cases</div>
+		</button>
+		<button type="button" class="stat-card clickable" data-dashboard-action="resolved-cases" title="View resolved cases">
 			<div class="stat-card-header">
 				<span class="stat-label">Resolved Cases</span>
 				<div class="stat-icon amber">✓</div>
 			</div>
 			<div class="stat-value">${stats.resolved_cases}</div>
 			<div class="stat-change">investigations closed</div>
-		</div>
+		</button>
 	`;
+
+	document.querySelectorAll("#statsGrid [data-dashboard-action]").forEach((card) => {
+		card.addEventListener("click", () => {
+			switch (card.dataset.dashboardAction) {
+				case "all-cases":
+					showCases("all");
+					break;
+				case "flagged-transactions":
+					document.getElementById("flaggedTable").closest(".content-card")
+						.scrollIntoView({ behavior: "smooth", block: "start" });
+					break;
+				case "active-policies":
+					document.getElementById("policiesTable").closest(".content-card")
+						.scrollIntoView({ behavior: "smooth", block: "start" });
+					break;
+				case "resolved-cases":
+					showCases("Resolved");
+					break;
+			}
+		});
+	});
 
 	const activities = [
 		...cases.map((c) => ({
@@ -223,9 +254,13 @@ function renderDashboard() {
 				type: "transaction",
 				record: t,
 				sortOrder: recordNumber(t.id),
-				dot: "red",
+				dot: t.risk === "High" ? "red" : t.risk === "Medium" ? "amber" : "green",
 				text: `Transaction ${t.id} flagged`,
 				meta: `$${t.amount} · High risk`,
+			}))
+			.map((activity) => ({
+				...activity,
+				meta: `$${activity.record.amount} · ${activity.record.risk} risk`,
 			})),
 	].sort((a, b) => b.sortOrder - a.sortOrder).slice(0, 5);
 
@@ -254,7 +289,9 @@ function renderDashboard() {
 		});
 	});
 
-	const flagged = transactions.filter((t) => t.flagged);
+	const flagged = transactions
+		.filter((transaction) => transaction.flagged)
+		.sort((a, b) => riskRank(a.risk) - riskRank(b.risk) || recordNumber(b.id) - recordNumber(a.id));
 	document.getElementById("flaggedTable").innerHTML =
 		flagged.length > 0
 			? flagged
@@ -285,6 +322,7 @@ function renderDashboard() {
 		}))
 		.filter((policy) => policy.usedIn > 0)
 		.sort((a, b) => b.usedIn - a.usedIn || a.id.localeCompare(b.id));
+	document.getElementById("activePoliciesValue").textContent = activePolicies.length;
 
 	document.getElementById("policiesTable").innerHTML = activePolicies.length
 		? activePolicies
@@ -306,6 +344,76 @@ function renderDashboard() {
 			if (policy) openRecordDetail({ ...policy, type: "Policy" }, "dashboard");
 		});
 	});
+
+}
+
+function canManageTransactionFlags() {
+	return Boolean(currentUser);
+}
+
+function riskRank(risk) {
+	return { High: 0, Medium: 1, Low: 2 }[risk] ?? 3;
+}
+
+function setRecordDetailFlagButton(button, isFlagged, disabled = false) {
+	button.disabled = disabled;
+	button.innerHTML = `<span>${isFlagged ? "Unflag Transaction" : "Flag Transaction"}</span>`;
+}
+
+function renderAllTransactions(transactions) {
+	const table = document.getElementById("allTransactionsTable");
+	const autoFlagButton = document.getElementById("autoFlagTransactionsBtn");
+	const mayFlag = canManageTransactionFlags();
+	autoFlagButton.hidden = !mayFlag;
+	autoFlagButton.onclick = () => autoFlagTransactions();
+
+	table.innerHTML = [...transactions]
+		.sort((a, b) => recordNumber(b.id) - recordNumber(a.id))
+		.map((transaction) => `
+			<tr class="clickable" data-all-transaction-id="${escapeHtml(transaction.id)}">
+				<td><strong>${escapeHtml(transaction.id)}</strong></td>
+				<td>$${escapeHtml(String(transaction.amount))}</td>
+				<td><span class="badge ${badgeClass(transaction.risk, "risk")}">${escapeHtml(transaction.risk)}</span></td>
+				<td>${transaction.flagged ? "Yes" : "No"}</td>
+				<td><button type="button" class="btn-outline transaction-flag-btn" data-flag-transaction-id="${escapeHtml(transaction.id)}" ${!mayFlag ? "disabled" : ""}>${transaction.flagged ? "Unflag" : "Flag"}</button></td>
+			</tr>`)
+		.join("");
+
+	table.onclick = (event) => {
+		const flagButton = event.target.closest("[data-flag-transaction-id]");
+		if (flagButton) {
+			event.stopPropagation();
+			if (!flagButton.disabled) toggleTransactionFlag(flagButton.dataset.flagTransactionId);
+			return;
+		}
+		const row = event.target.closest("tr[data-all-transaction-id]");
+		if (!row) return;
+		const transaction = transactions.find((item) => item.id === row.dataset.allTransactionId);
+		if (transaction) openRecordDetail({ ...transaction, type: "Transaction" }, "dashboard");
+	};
+}
+
+async function toggleTransactionFlag(id) {
+	const response = await fetch(`${API_BASE}/data.php?action=toggle_transaction_flag`, {
+		method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }),
+	});
+	const result = await response.json();
+	if (!response.ok) {
+		alert(result.error || "Unable to update transaction flag.");
+		return false;
+	}
+	appData = result.data;
+	renderDashboard(); renderReports(); renderRecentKnowledge();
+	return true;
+}
+
+async function autoFlagTransactions() {
+	const response = await fetch(`${API_BASE}/data.php?action=auto_flag_transactions`, { method: "POST", credentials: "include" });
+	const result = await response.json();
+	if (!response.ok) return alert(result.error || "Unable to run AI auto-flag.");
+	appData = result.data;
+	renderDashboard(); renderReports(); renderRecentKnowledge();
+	alert(result.flagged_ids?.length ? `AI flagged: ${result.flagged_ids.join(", ")}` : "AI found no additional transactions to flag.");
 }
 
 function recordNumber(id) {
@@ -343,6 +451,14 @@ function renderCases(filter = "all") {
 	});
 }
 
+function showCases(filter) {
+	document.querySelectorAll("#caseFilters .filter-btn").forEach((button) => {
+		button.classList.toggle("active", button.dataset.filter === filter);
+	});
+	renderCases(filter);
+	navigateTo("cases");
+}
+
 function openCaseDetail(caseId, returnView = "cases") {
 	currentSelectedCaseId = caseId;
 	caseDetailReturnView = returnView;
@@ -362,6 +478,7 @@ function openCaseDetail(caseId, returnView = "cases") {
 function renderRecordDetail(record) {
 	const isTransaction = record.type === "Transaction";
 	const badge = document.getElementById("recordDetailBadge");
+	const flagButton = document.getElementById("recordDetailFlagBtn");
 	const summary = record.summary || record.text || "No details available.";
 
 	document.getElementById("recordDetailId").textContent = `${record.type}: ${record.id}`;
@@ -374,14 +491,32 @@ function renderRecordDetail(record) {
 		badge.className = `badge ${badgeClass(record.risk, "risk")}`;
 		const time = summary.match(/time\s+([^,]+)/i)?.[1] || "Not provided";
 		const location = summary.match(/location\s+([^,]+)/i)?.[1] || "Not provided";
-		document.getElementById("recordDetailInformation").innerHTML = `
+			document.getElementById("recordDetailInformation").innerHTML = `
 			<div class="suggestion-item"><strong>Transaction ID</strong>${escapeHtml(record.id)}</div>
 			<div class="suggestion-item"><strong>Amount</strong>$${escapeHtml(String(record.amount))}</div>
-			<div class="suggestion-item"><strong>Risk level</strong>${escapeHtml(record.risk)}</div>
+			<div class="suggestion-item"><strong>Risk level</strong><span class="badge ${badgeClass(record.risk, "risk")}">${escapeHtml(record.risk)}</span></div>
 			<div class="suggestion-item"><strong>Flagged</strong>${record.flagged ? "Yes" : "No"}</div>
 			<div class="suggestion-item"><strong>Time</strong>${escapeHtml(time)}</div>
 			<div class="suggestion-item"><strong>Location</strong>${escapeHtml(location)}</div>`;
+
+		flagButton.hidden = !canManageTransactionFlags();
+		setRecordDetailFlagButton(flagButton, record.flagged, !canManageTransactionFlags());
+		flagButton.onclick = async () => {
+			if (flagButton.disabled) return;
+			const nextFlagState = !record.flagged;
+			setRecordDetailFlagButton(flagButton, nextFlagState, true);
+			flagButton.textContent = "Flagging…";
+			setRecordDetailFlagButton(flagButton, nextFlagState, true);
+			if (!(await toggleTransactionFlag(record.id))) {
+				setRecordDetailFlagButton(flagButton, record.flagged);
+				return;
+			}
+			const updatedRecord = appData.transactions.find((item) => item.id === record.id);
+			if (updatedRecord) renderRecordDetail({ ...updatedRecord, type: "Transaction" });
+		};
 	} else {
+		flagButton.hidden = true;
+		flagButton.onclick = null;
 		badge.textContent = record.category;
 		badge.className = "badge";
 		document.getElementById("recordDetailInformation").innerHTML = `
@@ -408,7 +543,7 @@ function setupCaseFilters() {
 				.querySelectorAll("#caseFilters .filter-btn")
 				.forEach((b) => b.classList.remove("active"));
 			btn.classList.add("active");
-			renderCases(btn.dataset.filter);
+			showCases(btn.dataset.filter);
 		});
 	});
 }
@@ -513,7 +648,9 @@ function buildStaffReport() {
 	const openCases = cases.filter((c) => c.status === "Open");
 	const resolvedCases = cases.filter((c) => c.status === "Resolved");
 	const openHigh = openCases.filter((c) => c.severity === "High");
-	const flagged = transactions.filter((t) => t.flagged);
+	const flagged = transactions
+		.filter((t) => t.flagged)
+		.sort((a, b) => riskRank(a.risk) - riskRank(b.risk) || recordNumber(b.id) - recordNumber(a.id));
 	const resolutionRate = cases.length
 		? Math.round((resolvedCases.length / cases.length) * 100)
 		: 0;
@@ -794,6 +931,34 @@ function renderSearchResultMeta(result) {
 	return "";
 }
 
+function renderRecentKnowledge() {
+	const container = document.getElementById("recentKnowledgeRecords");
+	if (!container || !appData) return;
+	const recentCases = [...appData.cases].sort((a, b) => recordNumber(b.id) - recordNumber(a.id)).slice(0, 3)
+		.map((record) => ({ ...record, type: "Case" }));
+	const recentPolicies = [...appData.policies].sort((a, b) => recordNumber(b.id) - recordNumber(a.id)).slice(0, 3)
+		.map((record) => ({ ...record, type: "Policy" }));
+	const recentTransactions = [...appData.transactions].sort((a, b) => recordNumber(b.id) - recordNumber(a.id)).slice(0, 3)
+		.map((record) => ({ ...record, type: "Transaction" }));
+	knowledgeSearchResults = [...recentCases, ...recentPolicies, ...recentTransactions];
+
+	const groups = [
+		["Recent Cases", recentCases],
+		["Recent Policies", recentPolicies],
+		["Recent Transactions", recentTransactions],
+	].map(([label, records]) => `
+		<div class="search-result-group">
+			<div class="search-result-group-title">${label}</div>
+			${records.map((record) => `
+				<button type="button" class="result-item clickable" data-record-id="${escapeHtml(record.id)}" data-record-type="${escapeHtml(record.type)}" title="View ${escapeHtml(record.type)} details">
+					<div class="result-id">${escapeHtml(record.id)} · ${escapeHtml(record.type)}</div>
+					<div class="result-meta">${renderSearchResultMeta(record)}</div>
+					<div class="result-text">${escapeHtml(record.summary)}</div>
+				</button>`).join("")}
+		</div>`).join("");
+	container.innerHTML = groups;
+}
+
 async function searchKnowledge(query) {
 	const container = document.getElementById("searchResults");
 	const requestId = ++knowledgeSearchRequestId;
@@ -861,9 +1026,9 @@ function setupKnowledgeSearch() {
 	};
 	const clearSearch = () => {
 		knowledgeSearchRequestId++;
-		knowledgeSearchResults = [];
 		input.value = "";
-		container.innerHTML = `<div class="empty-state">Enter a keyword to search the knowledge base</div>`;
+		container.innerHTML = `<div id="recentKnowledgeRecords"></div>`;
+		renderRecentKnowledge();
 		input.focus();
 	};
 	document.getElementById("knowledgeSearchBtn").addEventListener("click", search);
@@ -1267,6 +1432,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 	renderDashboard();
 	renderCases();
 	renderReports();
+	renderRecentKnowledge();
 
 	setupNavigation();
 	setupCaseFilters();

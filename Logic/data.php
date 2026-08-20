@@ -31,6 +31,12 @@ switch ($action) {
     case 'search':
         handleSearch();
         break;
+    case 'toggle_transaction_flag':
+        handleToggleTransactionFlag();
+        break;
+    case 'auto_flag_transactions':
+        handleAutoFlagTransactions();
+        break;
     default:
         http_response_code(400);
         echo json_encode(['error' => 'Invalid action']);
@@ -175,8 +181,8 @@ function formatCase(array $item): array
 
 function formatTransaction(array $item): array
 {
-    $text = $item['text'];
-    $flagged = stripos($text, 'flagged true') !== false;
+	$text = $item['text'];
+	$flagged = stripos($text, 'flagged true') !== false;
 
     preg_match('/\$(\d+)/', $text, $amount);
     preg_match('/amount \$(\d+)/', $text, $amt);
@@ -186,8 +192,130 @@ function formatTransaction(array $item): array
         'summary' => $text,
         'amount' => $amt[1] ?? ($amount[1] ?? '—'),
         'flagged' => $flagged,
-        'risk' => $flagged ? 'High' : 'Low',
-    ];
+		// Risk is assessed independently of whether a transaction is flagged.
+		'risk' => $item['risk_level'] ?? getTransactionRisk($text),
+	];
+}
+
+function getTransactionRisk(string $text): string
+{
+    if (preg_match('/amount \$(\d[\d,]*)/i', $text, $matches)) {
+        $amount = (int) str_replace(',', '', $matches[1]);
+        if ($amount >= 2500) {
+            return 'High';
+        }
+        if ($amount >= 200) {
+            return 'Medium';
+        }
+    }
+
+    return 'Low';
+}
+
+function requireFlagPermission(): void
+{
+    // The session check at the top of this endpoint ensures that only signed-in
+    // users can change a transaction's flag status.
+}
+
+function readTransactionPayload(): array
+{
+    $payload = json_decode(file_get_contents('php://input'), true);
+    return is_array($payload) ? $payload : [];
+}
+
+function saveTransactions(array $transactions): bool
+{
+    $path = __DIR__ . '/../Data/transactions.json';
+    $json = json_encode($transactions, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    return $json !== false && file_put_contents($path, $json . "\n", LOCK_EX) !== false;
+}
+
+function setTransactionFlag(array &$transaction, string $flaggedBy): bool
+{
+    if (stripos($transaction['text'] ?? '', 'flagged true') !== false) {
+        return false;
+    }
+
+    $text = $transaction['text'] ?? '';
+    if (stripos($text, 'flagged false') !== false) {
+        $transaction['text'] = preg_replace('/flagged false/i', 'flagged true', $text, 1);
+    } else {
+        $transaction['text'] = rtrim($text, ". ") . ', flagged true';
+    }
+    $transaction['flagged_by'] = $flaggedBy;
+    return true;
+}
+
+function clearTransactionFlag(array &$transaction): bool
+{
+    $text = $transaction['text'] ?? '';
+    if (stripos($text, 'flagged true') === false) {
+        return false;
+    }
+    $transaction['text'] = preg_replace('/flagged true/i', 'flagged false', $text, 1);
+    $transaction['flagged_by'] = null;
+    return true;
+}
+
+function handleToggleTransactionFlag(): void
+{
+    requireFlagPermission();
+    $id = trim(readTransactionPayload()['id'] ?? '');
+    if ($id === '') {
+        http_response_code(400);
+        echo json_encode(['error' => 'Transaction ID is required.']);
+        return;
+    }
+
+    $transactions = loadJsonRecords(__DIR__ . '/../Data/transactions.json');
+    foreach ($transactions as &$transaction) {
+        if (($transaction['id'] ?? '') !== $id) {
+            continue;
+        }
+        $isFlagged = stripos($transaction['text'] ?? '', 'flagged true') !== false;
+        if ($isFlagged) {
+            clearTransactionFlag($transaction);
+        } else {
+            setTransactionFlag($transaction, 'Manual');
+        }
+        if (!saveTransactions($transactions)) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Unable to save the transaction flag status.']);
+            return;
+        }
+		syncKnowledgeBaseFromJson(getDB());
+        echo json_encode(['success' => true, 'flagged' => !$isFlagged, 'data' => getAllData()]);
+        return;
+    }
+
+    http_response_code(404);
+    echo json_encode(['error' => 'Transaction not found.']);
+}
+
+function handleAutoFlagTransactions(): void
+{
+    requireFlagPermission();
+    $transactions = loadJsonRecords(__DIR__ . '/../Data/transactions.json');
+    $flaggedIds = [];
+    foreach ($transactions as &$transaction) {
+        $risk = strtolower($transaction['risk_level'] ?? '');
+        $text = strtolower($transaction['text'] ?? '');
+        $shouldFlag = in_array($risk, ['high', 'medium'], true)
+            || str_contains($text, 'unknown vpn')
+            || str_contains($text, 'new device');
+        if ($shouldFlag && setTransactionFlag($transaction, 'AI')) {
+            $flaggedIds[] = $transaction['id'];
+        }
+    }
+
+    if (!saveTransactions($transactions)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Unable to save AI flags.']);
+        return;
+    }
+	syncKnowledgeBaseFromJson(getDB());
+    echo json_encode(['success' => true, 'flagged_ids' => $flaggedIds, 'data' => getAllData()]);
 }
 
 function getPolicyCategory(string $text): string

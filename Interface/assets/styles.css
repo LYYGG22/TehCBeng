@@ -1109,6 +1109,22 @@ body {
 	box-shadow: var(--ih-shadow);
 }
 
+button.stat-card {
+	width: 100%;
+	font-family: inherit;
+	text-align: left;
+	cursor: pointer;
+	transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+button.stat-card:hover,
+button.stat-card:focus-visible {
+	border-color: var(--ih-accent);
+	box-shadow: 0 4px 12px rgba(37, 99, 235, 0.14);
+	outline: none;
+	transform: translateY(-1px);
+}
+
 .stat-card-header {
 	display: flex;
 	align-items: center;
@@ -2023,6 +2039,19 @@ button.activity-item:focus-visible {
 	font-size: 0.8125rem;
 	font-weight: 600;
 	border-radius: 999px;
+}
+
+.transaction-detail-flag-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	white-space: nowrap;
+}
+
+.transaction-detail-flag-btn img {
+	width: 18px;
+	height: 18px;
+	object-fit: contain;
 }
 
 .case-detail-content {

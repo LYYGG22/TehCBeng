@@ -13,6 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 $users = [
+	'admin@intellihub.com' => [
+		'password' => 'admin123',
+		'name' => 'System Admin',
+		'role' => 'Admin',
+	],
     'manager@intellihub.com' => [
         'password' => 'manager123',
         'name' => 'Case Manager',
