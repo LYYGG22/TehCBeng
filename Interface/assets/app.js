@@ -87,10 +87,12 @@ function badgeClass(value, type) {
 
 function extractKeywords(text) {
 	const keywords = [
-		"unauthorized", "transfer", "payee", "new", "card", "testing", "refund", "merchant", 
+		"unauthorized", "transfer", "payee", "new", "card", "testing", "refund", "merchant",
 		"device", "browser", "password", "reset", "transaction", "duplicate", "charge",
 		"verification", "otp", "velocity", "geo", "fraud", "flagged", "frozen", "blocked",
-		"reversed", "locked", "payout", "deposit", "payment", "high-value", "anomaly"
+		"reversed", "locked", "payout", "deposit", "payment", "high-value", "anomaly",
+		"phishing", "social", "engineering", "sim", "swap", "mule", "identity", "chargeback",
+		"travel", "country", "wallet", "fingerprint", "impersonat"
 	];
 	
 	const found = [];
@@ -208,7 +210,7 @@ function renderDashboard() {
 
 	const activities = [
 		...cases.map((c) => ({
-			dot: c.severity === "High" ? "red" : "amber",
+			dot: c.severity === "High" ? "red" : c.severity === "Low" ? "green" : "amber",
 			text: `Case ${c.id}: ${c.type}`,
 			meta: `${c.status} · ${c.severity} severity`,
 		})),
@@ -355,14 +357,17 @@ function renderCaseDetail(caseId) {
 	const caseData = appData.cases.find(c => c.id === caseId);
 	if (!caseData) return;
 
-	const keywords = extractKeywords(caseData.summary);
+	const originalMessage = caseData.original_message || "";
+	const keywords = extractKeywords(`${originalMessage} ${caseData.summary || ""}`);
 	const matchedPolicies = matchPolicies(keywords, appData.policies);
 
 	document.getElementById("caseDetailId").textContent = caseId;
 	document.getElementById("caseDetailStatus").textContent = caseData.status;
 	document.getElementById("caseDetailStatus").className = `badge ${badgeClass(caseData.status, "status")}`;
 
-	document.getElementById("caseDetailMessage").innerHTML = `<p>${escapeHtml(caseData.summary)}</p>`;
+	document.getElementById("caseDetailMessage").innerHTML = originalMessage
+		? `<p>${escapeHtml(originalMessage)}</p>`
+		: `<p class="text-muted">No original customer message is on file for this case.</p>`;
 
 	document.getElementById("caseDetailKeywords").innerHTML = keywords.length > 0
 		? `<div class="keywords-list">${keywords.map(kw => `<span class="keyword-tag">${escapeHtml(kw)}</span>`).join("")}</div>`
@@ -440,10 +445,12 @@ function renderReports() {
 
 	const highSev = cases.filter((c) => c.severity === "High").length;
 	const medSev = cases.filter((c) => c.severity === "Medium").length;
+	const lowSev = cases.filter((c) => c.severity === "Low").length;
 
 	renderBarChart("severityChart", [
 		{ label: "High", value: highSev, color: "red" },
 		{ label: "Medium", value: medSev, color: "amber" },
+		{ label: "Low", value: lowSev, color: "green" },
 	]);
 
 	const categories = {};

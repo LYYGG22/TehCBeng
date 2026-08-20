@@ -1,4 +1,59 @@
 [
-  {"id": "POL001", "text": "Policy: Any single transaction exceeding $5,000 requires secondary verification via OTP before processing.", "access_level": "manager"},
-  {"id": "POL002", "text": "Policy: More than 5 transactions within a 15-minute window from the same account triggers automatic velocity check."}
+  {
+    "id": "POL001",
+    "text": "Policy: Any single transaction exceeding $5,000 requires secondary verification via OTP before processing.",
+    "access_level": "manager"
+  },
+  {
+    "id": "POL002",
+    "text": "Policy: More than 5 transactions within a 15-minute window from the same account triggers automatic velocity check."
+  },
+  {
+    "id": "POL003",
+    "text": "Policy: New or unrecognized device fingerprints and browser sessions must trigger step-up verification before high-value payout or password reset actions."
+  },
+  {
+    "id": "POL004",
+    "text": "Policy: Transfers above $1,000 to a new payee added within 24 hours should be held for manual review before the payment is released."
+  },
+  {
+    "id": "POL005",
+    "text": "Policy: Transactions in two geographically distant locations, travel flags, or a blocked IP within an implausible timeframe are a geo-velocity anomaly and must be flagged."
+  },
+  {
+    "id": "POL006",
+    "text": "Policy: Multiple low-value card authorizations to different merchants within a short window should be treated as card testing and the card frozen pending verification."
+  },
+  {
+    "id": "POL007",
+    "text": "Policy: Rapid high-value purchases followed by multiple refunds to the same customer or merchant profile must be reviewed as refund abuse."
+  },
+  {
+    "id": "POL008",
+    "text": "Policy: Duplicate charge reports after a failed payment or terminal timeout should be matched to the original transaction before any refund is issued."
+  },
+  {
+    "id": "POL009",
+    "text": "Policy: Customers who submitted an OTP or password on a phishing page require an immediate account lock, session kill, and social-engineering investigation."
+  },
+  {
+    "id": "POL010",
+    "text": "Policy: A SIM swap, lost OTP channel, or same-day password reset with an outbound payout must be treated as account takeover until device and identity verification is complete."
+  },
+  {
+    "id": "POL011",
+    "text": "Policy: Unexpected inbound deposits followed by a same-day outbound transfer are money-mule indicators and should be held for review, including low-value amounts."
+  },
+  {
+    "id": "POL012",
+    "text": "Policy: Chargebacks on delivered digital goods where the customer still has access are friendly fraud and require evidence packing before any refund."
+  },
+  {
+    "id": "POL013",
+    "text": "Policy: New credit or account applications that fail identity verification, or reports of stolen identity documents, must freeze onboarding and block high-value draws."
+  },
+  {
+    "id": "POL014",
+    "text": "Policy: Callers who impersonate fraud staff and request a payee change, OTP, or password are social-engineering attempts; never coach a customer to approve those actions by phone."
+  }
 ]

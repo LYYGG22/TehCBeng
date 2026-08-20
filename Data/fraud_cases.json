@@ -1,8 +1,118 @@
 [
-  {"id": "FC001", "text": "Case: Customer reported unauthorized $2,500 transfer to new payee added same day. Resolution: Reversed, account locked."},
-  {"id": "FC002", "text": "Case: Multiple small transactions under $50 within 10 minutes to different merchants, flagged as card testing pattern. Resolution: Card frozen pending verification."},
-  {"id": "FC003", "text": "Case: Three refunds were issued to the same customer profile within 20 minutes after a rapid sequence of high-value purchases from a single merchant. Resolution: Merchant account frozen and refunds reversed."},
-  {"id": "FC004", "text": "Case: Customer reported a $1,850 duplicate charge after a failed top-up request. Open review remains pending before funds are released.", "access_level": "manager"},
-  {"id": "FC005", "text": "Case: New browser session, unknown device fingerprint, and a pending payout request of $6,900 were flagged before authorization. Case remains open for verification.", "access_level": "manager"},
-  {"id": "FC006", "text": "Case: Customer reported a $1,400 transfer mismatch after repeated billing errors. Resolution: Funds restored and account review completed."}
+  {
+    "id": "FC001",
+    "type": "Account Takeover",
+    "severity": "High",
+    "text": "Case: Customer reported unauthorized $2,500 transfer to new payee added same day. Resolution: Reversed, account locked.",
+    "original_message": "Hi, I just saw a $2,500 transfer leave my account to a payee I do not recognize. I did not add this person today and I did not authorize the payment. Please stop it and help me get my money back."
+  },
+  {
+    "id": "FC002",
+    "type": "Card Testing",
+    "severity": "Medium",
+    "text": "Case: Multiple small transactions under $50 within 10 minutes to different merchants, flagged as card testing pattern. Resolution: Card frozen pending verification.",
+    "original_message": "Hello, my card was charged several times for amounts under $50 at shops I have never used. These went through within about 10 minutes. I did not make any of these purchases. Please freeze my card and investigate."
+  },
+  {
+    "id": "FC003",
+    "type": "Merchant Refund Abuse",
+    "severity": "High",
+    "text": "Case: Three refunds were issued to the same customer profile within 20 minutes after a rapid sequence of high-value purchases from a single merchant. Resolution: Merchant account frozen and refunds reversed.",
+    "original_message": "We processed three refunds to the same customer in about 20 minutes after a run of high-value purchases in our store. This does not look like normal customer behaviour. Please review the merchant activity and those refunds."
+  },
+  {
+    "id": "FC004",
+    "type": "Duplicate Charge",
+    "severity": "Medium",
+    "text": "Case: Customer reported a $1,850 duplicate charge after a failed top-up request. Open review remains pending before funds are released.",
+    "access_level": "manager",
+    "original_message": "I tried to top up but the request failed, then I was charged $1,850 twice. I only attempted the top-up once. Please check the duplicate charge and refund the extra amount."
+  },
+  {
+    "id": "FC005",
+    "type": "Account Takeover",
+    "severity": "High",
+    "text": "Case: New browser session, unknown device fingerprint, and a pending payout request of $6,900 were flagged before authorization. Case remains open for verification.",
+    "access_level": "manager",
+    "original_message": "I received an alert about a $6,900 payout from my account. I did not request this payout and I am not using a new device or browser. Please hold the payout until I can verify my account."
+  },
+  {
+    "id": "FC006",
+    "type": "Unauthorized Transfer",
+    "severity": "Medium",
+    "text": "Case: Customer reported a $1,400 transfer mismatch after repeated billing errors. Resolution: Funds restored and account review completed.",
+    "original_message": "There is a $1,400 mismatch on my account after several billing errors. The transfer amount is not what I authorized. Please restore the correct funds and confirm what went wrong."
+  },
+  {
+    "id": "FC007",
+    "type": "Geo-Velocity Anomaly",
+    "severity": "High",
+    "text": "Case: Card used in Singapore then London within 90 minutes, with a $3,200 purchase from a blocked IP. Open review for geo-velocity fraud.",
+    "original_message": "I am in Singapore and just got an SMS for a $3,200 purchase in London. I have not travelled and I still have my card with me. Please block the card and reverse that payment."
+  },
+  {
+    "id": "FC008",
+    "type": "Phishing",
+    "severity": "Medium",
+    "text": "Case: Customer entered OTP on a fake bank page after a phishing email, then a $640 wallet transfer was attempted. Open social-engineering review.",
+    "original_message": "I got an email that looked like it was from the bank asking me to verify my account. I entered my OTP on that page, then saw a $640 wallet transfer I did not make. Please stop any further payments."
+  },
+  {
+    "id": "FC009",
+    "type": "SIM Swap",
+    "severity": "High",
+    "text": "Case: Password reset and SIM swap on the same afternoon, followed by an unauthorized $4,800 payout. Account remains locked pending verification.",
+    "original_message": "My phone lost signal and I could not receive OTPs. After that someone reset my password and a $4,800 payout went out. I did not request a SIM swap. Please lock the account and recover the funds."
+  },
+  {
+    "id": "FC010",
+    "type": "Friendly Fraud",
+    "severity": "Medium",
+    "text": "Case: Customer filed a $920 chargeback on a completed digital purchase while still using the service. Resolution: Chargeback evidence packed and claim disputed.",
+    "original_message": "I want a chargeback of $920. I do not recognize this merchant charge even though the service shows as delivered. Please refund me and close the transaction."
+  },
+  {
+    "id": "FC011",
+    "type": "Money Mule",
+    "severity": "Low",
+    "text": "Case: Account received a $180 deposit from an unknown sender, then an outbound payment was attempted the same hour. Open mule-activity review.",
+    "original_message": "Someone deposited $180 into my account and asked me to send it on to another name today. I do not know this person. Is this allowed, or should I refuse the transfer?"
+  },
+  {
+    "id": "FC012",
+    "type": "Identity Theft",
+    "severity": "High",
+    "text": "Case: New account opened with stolen identity documents, then a $5,400 credit line draw was requested. Open identity-verification hold.",
+    "access_level": "manager",
+    "original_message": "A bank officer called about a new account and a $5,400 credit draw in my name. I never opened this account and my identity documents were stolen last month. Please freeze everything under my name."
+  },
+  {
+    "id": "FC013",
+    "type": "Duplicate Charge",
+    "severity": "Low",
+    "text": "Case: Customer reported a $35 duplicate coffee-shop charge after a terminal timeout. Resolution: Merchant reversed the second charge.",
+    "original_message": "I paid $35 for coffee but the terminal froze and I was charged twice. Please reverse the duplicate charge. It is a small amount but I do not want it to stay on my statement."
+  },
+  {
+    "id": "FC014",
+    "type": "Card Testing",
+    "severity": "Low",
+    "text": "Case: Six $8 authorizations to overseas digital merchants in four minutes. Card testing suspected. Resolution: Card frozen and replacement issued.",
+    "original_message": "I see six $8 charges from websites I have never visited, all within a few minutes. Please freeze my card and send a replacement."
+  },
+  {
+    "id": "FC015",
+    "type": "Social Engineering",
+    "severity": "Medium",
+    "text": "Case: Caller impersonated fraud staff and convinced the customer to approve a $1,100 payee change. Open review remains pending.",
+    "original_message": "Someone called saying they were from the fraud team and asked me to confirm a new payee so they could secure my account. I approved a $1,100 change. I am not sure that was real. Please check and undo it."
+  },
+  {
+    "id": "FC016",
+    "type": "Geo-Velocity Anomaly",
+    "severity": "High",
+    "text": "Case: Travel-flagged wallet spend of $7,200 across two countries in under two hours. Resolution: Wallet frozen, blocked IP listed, funds secured.",
+    "access_level": "manager",
+    "original_message": "My wallet shows $7,200 spent in another country while I am at home. I did not travel and I did not approve these payments. Please freeze the wallet and recover the money."
+  }
 ]

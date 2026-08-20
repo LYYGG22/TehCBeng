@@ -30,10 +30,11 @@ function loadCaseFromJson(string $caseId): ?array
                 'case_id' => $caseId,
                 'title' => 'Fraud case investigation',
                 'status' => $status,
-                'risk_level' => $severity,
+                'risk_level' => $case['severity'] ?? $severity,
                 'date_reported' => 'N/A',
                 'date_resolved' => $status === 'Resolved' ? 'N/A' : null,
                 'raw_details' => $summary,
+                'original_message' => $case['original_message'] ?? '',
                 'fraud_trend' => 'Matches the incident summary recorded in the case file.',
                 'suggestion' => 'Continue review of the flagged activity and align with the investigation policy.',
                 'confidence_score' => 80,
@@ -187,7 +188,13 @@ if (!$case) {
             </div>
 
             <div class="section">
-                <h2>Raw Details</h2>
+                <h2>Customer's Original Message</h2>
+                <?php $originalMessage = trim((string) ($case['original_message'] ?? '')); ?>
+                <p><?= nl2br(htmlspecialchars($originalMessage !== '' ? $originalMessage : 'No original customer message is on file for this case.')) ?></p>
+            </div>
+
+            <div class="section">
+                <h2>Investigation Summary</h2>
                 <p><?= nl2br(htmlspecialchars($case['raw_details'])) ?></p>
             </div>
 

@@ -91,8 +91,36 @@ function getCaseType(string $text): string
         return 'Card Testing';
     }
 
+    if (stripos($text, 'chargeback') !== false || stripos($text, 'friendly fraud') !== false) {
+        return 'Friendly Fraud';
+    }
+
     if (stripos($text, 'refund') !== false) {
         return 'Merchant Refund Abuse';
+    }
+
+    if (stripos($text, 'phishing') !== false) {
+        return 'Phishing';
+    }
+
+    if (stripos($text, 'social-engineering') !== false || stripos($text, 'social engineering') !== false || stripos($text, 'impersonat') !== false) {
+        return 'Social Engineering';
+    }
+
+    if (stripos($text, 'sim swap') !== false) {
+        return 'SIM Swap';
+    }
+
+    if (stripos($text, 'mule') !== false) {
+        return 'Money Mule';
+    }
+
+    if (stripos($text, 'identity') !== false) {
+        return 'Identity Theft';
+    }
+
+    if (stripos($text, 'duplicate') !== false) {
+        return 'Duplicate Charge';
     }
 
     if (stripos($text, 'wallet') !== false || stripos($text, 'country') !== false || stripos($text, 'travel') !== false || stripos($text, 'geo') !== false || stripos($text, 'blocked ip') !== false) {
@@ -112,18 +140,17 @@ function getCaseType(string $text): string
 
 function getCaseSeverity(string $text): string
 {
+    $amount = 0;
     if (preg_match('/\$(\d[\d,]*)/', $text, $matches)) {
         $amount = (int) str_replace(',', '', $matches[1]);
-        if ($amount >= 2500) {
-            return 'High';
-        }
     }
 
-    $highRiskKeywords = ['unauthorized', 'refund', 'wallet', 'blocked ip', 'country', 'travel', 'new payee', 'password reset', 'device', 'merchant'];
-    foreach ($highRiskKeywords as $keyword) {
-        if (stripos($text, $keyword) !== false) {
-            return 'High';
-        }
+    if ($amount >= 2500) {
+        return 'High';
+    }
+
+    if ($amount > 0 && $amount < 200) {
+        return 'Low';
     }
 
     return 'Medium';
@@ -133,14 +160,16 @@ function formatCase(array $item): array
 {
     $text = $item['text'];
     $status = getCaseStatus($text);
-    $severity = getCaseSeverity($text);
+    $severity = $item['severity'] ?? $item['risk_level'] ?? getCaseSeverity($text);
+    $type = $item['type'] ?? $item['fraud_type'] ?? getCaseType($text);
 
     return [
         'id' => $item['id'],
         'summary' => $text,
+        'original_message' => $item['original_message'] ?? '',
         'status' => $status,
         'severity' => $severity,
-        'type' => getCaseType($text),
+        'type' => $type,
     ];
 }
 
@@ -161,12 +190,56 @@ function formatTransaction(array $item): array
     ];
 }
 
+function getPolicyCategory(string $text): string
+{
+    $lower = strtolower($text);
+
+    if (str_contains($lower, 'geo-velocity') || str_contains($lower, 'blocked ip') || str_contains($lower, 'travel')) {
+        return 'Geo-Velocity';
+    }
+    if (str_contains($lower, 'card testing')) {
+        return 'Card Testing';
+    }
+    if (str_contains($lower, 'refund')) {
+        return 'Refunds';
+    }
+    if (str_contains($lower, 'duplicate')) {
+        return 'Billing';
+    }
+    if (str_contains($lower, 'phishing') || str_contains($lower, 'social-engineering') || str_contains($lower, 'impersonat')) {
+        return 'Social Engineering';
+    }
+    if (str_contains($lower, 'sim swap') || str_contains($lower, 'device') || str_contains($lower, 'password')) {
+        return 'Account Security';
+    }
+    if (str_contains($lower, 'mule')) {
+        return 'Money Mule';
+    }
+    if (str_contains($lower, 'chargeback') || str_contains($lower, 'friendly fraud')) {
+        return 'Chargebacks';
+    }
+    if (str_contains($lower, 'identity')) {
+        return 'Identity';
+    }
+    if (str_contains($lower, 'payee')) {
+        return 'Payee Controls';
+    }
+    if (str_contains($lower, 'otp') || str_contains($lower, 'verification')) {
+        return 'Verification';
+    }
+    if (str_contains($lower, 'velocity')) {
+        return 'Velocity';
+    }
+
+    return 'General';
+}
+
 function formatPolicy(array $item): array
 {
     return [
         'id' => $item['id'],
         'summary' => $item['text'],
-        'category' => stripos($item['text'], 'verification') !== false ? 'Verification' : 'Velocity',
+        'category' => getPolicyCategory($item['text']),
     ];
 }
 
