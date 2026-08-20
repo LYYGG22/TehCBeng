@@ -1,0 +1,13 @@
+# Prevent Windows line-ending normalization (core.autocrlf) from corrupting
+# binary document files — git's text/binary auto-detection has already
+# silently mangled at least one committed PDF in this repo.
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.doc binary
+*.xls binary
+*.db binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
