@@ -1255,6 +1255,17 @@ button.activity-item:focus-visible {
 	overflow-x: auto;
 }
 
+.flagged-transactions-scroll {
+	max-height: 285px;
+	overflow-y: auto;
+}
+
+.flagged-transactions-scroll .data-table thead th {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+}
+
 .data-table {
 	width: 100%;
 	border-collapse: collapse;
@@ -2102,6 +2113,10 @@ button.activity-item:focus-visible {
 	align-items: center;
 	gap: 0.5rem;
 	white-space: nowrap;
+}
+
+.transaction-detail-flag-btn[hidden] {
+	display: none !important;
 }
 
 .transaction-detail-flag-btn img {

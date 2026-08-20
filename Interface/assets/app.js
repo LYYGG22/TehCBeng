@@ -403,6 +403,18 @@ async function toggleTransactionFlag(id) {
 		return false;
 	}
 	appData = result.data;
+	knowledgeSearchResults = knowledgeSearchResults.map((record) => {
+		if (record.type !== "Transaction") return record;
+		const updatedTransaction = appData.transactions.find((transaction) => transaction.id === record.id);
+		return updatedTransaction ? { ...record, ...updatedTransaction, type: "Transaction" } : record;
+	});
+	document.querySelectorAll('.result-item[data-record-type="Transaction"]').forEach((item) => {
+		const transaction = appData.transactions.find((record) => record.id === item.dataset.recordId);
+		if (!transaction) return;
+		const updatedRecord = { ...transaction, type: "Transaction" };
+		item.querySelector(".result-meta").innerHTML = renderSearchResultMeta(updatedRecord);
+		item.querySelector(".result-text").textContent = formatSearchSummary(updatedRecord);
+	});
 	renderDashboard(); renderReports(); renderRecentKnowledge();
 	return true;
 }
@@ -1105,12 +1117,20 @@ function renderSearchResultMeta(result) {
 	if (result.type === "Transaction") {
 		return `
 			<span class="badge ${badgeClass(result.risk, "risk")}">${escapeHtml(result.risk)} Risk</span>
+			<span class="badge ${result.flagged ? "badge-flagged" : "badge-clear"}">${result.flagged ? "Flagged" : "Not Flagged"}</span>
 			<span class="result-meta-label">$${escapeHtml(String(result.amount))}</span>`;
 	}
 	if (result.type === "Policy") {
 		return `<span class="badge">${escapeHtml(result.category)}</span>`;
 	}
 	return "";
+}
+
+function formatSearchSummary(record) {
+	const summary = record.summary || record.text || "";
+	return record.type === "Transaction"
+		? summary.replace(/,?\s*flagged\s+(?:true|false)\b/i, "").trim()
+		: summary;
 }
 
 function renderRecentKnowledge() {
@@ -1135,7 +1155,7 @@ function renderRecentKnowledge() {
 				<button type="button" class="result-item clickable" data-record-id="${escapeHtml(record.id)}" data-record-type="${escapeHtml(record.type)}" title="View ${escapeHtml(record.type)} details">
 					<div class="result-id">${escapeHtml(record.id)} · ${escapeHtml(record.type)}</div>
 					<div class="result-meta">${renderSearchResultMeta(record)}</div>
-					<div class="result-text">${escapeHtml(record.summary)}</div>
+					<div class="result-text">${escapeHtml(formatSearchSummary(record))}</div>
 				</button>`).join("")}
 		</div>`).join("");
 	container.innerHTML = groups;
@@ -1188,7 +1208,7 @@ async function searchKnowledge(query) {
 			<button type="button" class="result-item clickable" data-record-id="${escapeHtml(r.id)}" data-record-type="${escapeHtml(r.type)}" title="View ${escapeHtml(r.type)} details">
 				<div class="result-id">${escapeHtml(r.id)} · ${escapeHtml(r.type)}</div>
 				<div class="result-meta">${renderSearchResultMeta(r)}</div>
-				<div class="result-text">${escapeHtml(r.summary || r.text)}</div>
+				<div class="result-text">${escapeHtml(formatSearchSummary(r))}</div>
 			</button>`
 				)
 				.join("")}
