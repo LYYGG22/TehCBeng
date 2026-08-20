@@ -2127,6 +2127,7 @@ button.activity-item:focus-visible {
 	font-size: 0.875rem;
 	font-weight: 500;
 	border: 1px solid #7dd3fc;
+	text-transform: capitalize;
 }
 
 .text-muted {
