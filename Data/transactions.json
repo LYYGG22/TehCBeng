@@ -16,7 +16,8 @@
     },
     {
         "id": "TX004",
-        "text": "Transaction TX004: amount $48, time 2026-08-18 10:02, location Local merchant, flagged false"
+        "text": "Transaction TX004: amount $48, time 2026-08-18 10:02, location Local merchant, flagged false",
+        "access_level": "staff"
     },
     {
         "id": "TX005",
