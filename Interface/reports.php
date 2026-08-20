@@ -8,9 +8,14 @@ include __DIR__ . '/partials/chrome_head.php';
 					<section class="view-panel active" id="view-reports">
 						<div class="report-toolbar">
 							<p class="report-toolbar-note" id="reportGeneratedAt"></p>
-							<button class="btn-outline" id="exportReportBtn">
-								Export Report
-							</button>
+							<div class="report-export-controls">
+								<label class="sr-only" for="reportExportFormat">Export format</label>
+								<select id="reportExportFormat" aria-label="Export report format">
+									<option value="pdf">PDF</option>
+									<option value="excel">Excel (.xls)</option>
+								</select>
+								<button class="btn-outline" id="exportReportBtn">Export Report</button>
+							</div>
 						</div>
 						<div class="stats-grid" id="reportKpis"></div>
 						<div class="report-grid">

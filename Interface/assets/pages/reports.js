@@ -220,54 +220,116 @@ function renderReports() {
 		<p style="margin-top:0.75rem">Use the priority queue to open a case, read the customer's original message, then apply the matched policies before you close the file.</p>
 	`;
 
-	window.__staffReportExport = buildReportExportText(report);
-}
-
-function buildReportExportText(report) {
-	const lines = [
-		"IntelliHub Staff Investigation Report",
-		"=".repeat(40),
-		`Generated: ${report.generatedAt}`,
-		"",
-		"Workload",
-		`- Cases in scope: ${report.cases.length}`,
-		`- Open: ${report.openCases.length}`,
-		`- High-severity open: ${report.openHigh.length}`,
-		`- Resolved: ${report.resolvedCases.length}`,
-		`- Resolution rate: ${report.resolutionRate}%`,
-		`- Policies: ${report.policies.length}`,
-		`- Flagged transactions: ${report.flagged.length}`,
-		"",
-		"Open priority queue",
-	];
-
-	if (report.queue.length) {
-		report.queue.forEach((c) => {
-			lines.push(`- ${c.id} | ${c.type} | ${c.severity} | ${c.policyCount} policies matched`);
-		});
-	} else {
-		lines.push("- None");
-	}
-
-	lines.push("", "Findings");
-	report.findings.forEach((f) => lines.push(`- ${f.title}: ${f.text}`));
-	lines.push("", "Recommended actions");
-	report.actions.forEach((action, i) => lines.push(`${i + 1}. ${action}`));
-	return lines.join("\n");
 }
 
 function setupExportReport() {
 	document.getElementById("exportReportBtn").addEventListener("click", () => {
-		const text =
-			window.__staffReportExport ||
-			document.getElementById("reportSummary").innerText;
-		const blob = new Blob([text], { type: "text/plain" });
-		const a = document.createElement("a");
-		a.href = URL.createObjectURL(blob);
-		a.download = "intellihub-staff-report.txt";
-		a.click();
-		URL.revokeObjectURL(a.href);
+		const report = buildStaffReport();
+		const format = document.getElementById("reportExportFormat").value;
+		if (format === "excel") {
+			downloadReportBlob(new Blob([buildReportExcel(report)], { type: "application/vnd.ms-excel;charset=utf-8" }), "intellihub-staff-report.xls");
+			return;
+		}
+		downloadReportBlob(new Blob([buildReportPdf(report)], { type: "application/pdf" }), "intellihub-staff-report.pdf");
 	});
+}
+
+function downloadReportBlob(blob, filename) {
+	const link = document.createElement("a");
+	link.href = URL.createObjectURL(blob);
+	link.download = filename;
+	link.click();
+	URL.revokeObjectURL(link.href);
+}
+
+function buildReportExcel(report) {
+	const escapeXml = (value) => String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+	const cell = (value, style = "Cell") => `<Cell ss:StyleID="${style}"><Data ss:Type="String">${escapeXml(value)}</Data></Cell>`;
+	const row = (values, style) => `<Row>${values.map((value) => cell(value, style)).join("")}</Row>`;
+	const section = (title) => `<Row ss:Height="8"></Row><Row>${cell(title, "Section")}</Row>`;
+	const metrics = [["Cases in scope", report.cases.length], ["Open", report.openCases.length], ["Resolved", report.resolvedCases.length], ["Resolution rate", `${report.resolutionRate}%`], ["Flagged transactions", report.flagged.length]];
+	return `<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Styles><Style ss:ID="Cell"><Font ss:FontName="Calibri" ss:Size="10"/></Style><Style ss:ID="Title"><Font ss:FontName="Calibri" ss:Size="16" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#2563EB" ss:Pattern="Solid"/></Style><Style ss:ID="Section"><Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#1E3A8A"/><Interior ss:Color="#DBEAFE" ss:Pattern="Solid"/></Style><Style ss:ID="Header"><Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#2563EB" ss:Pattern="Solid"/></Style><Style ss:ID="Wrap"><Font ss:FontName="Calibri" ss:Size="10"/><Alignment ss:WrapText="1" ss:Vertical="Top"/></Style></Styles><Worksheet ss:Name="Investigation Report"><Table><Column ss:Width="150"/><Column ss:Width="320"/><Column ss:Width="115"/><Column ss:Width="115"/><Row ss:Height="30">${cell("IntelliHub Staff Investigation Report", "Title")}</Row>${row(["Generated", report.generatedAt], "Wrap")}${section("Workload")}${metrics.map((item) => row(item, "Cell")).join("")}${section("Staff Priority Queue")}${row(["Case ID", "Type", "Severity", "Matched policies"], "Header")}${report.queue.length ? report.queue.map((item) => row([item.id, item.type, item.severity, item.policyCount], "Cell")).join("") : row(["No open cases awaiting staff action"], "Wrap")}${section("Findings")}${report.findings.map((item) => row([item.title, item.text], "Wrap")).join("")}${section("Recommended Actions")}${report.actions.map((item, index) => row([`${index + 1}.`, item], "Wrap")).join("")}</Table></Worksheet></Workbook>`;
+}
+
+function buildReportPdf(report) {
+	const pages = [];
+	let commands = "";
+	let y = 695;
+	const startPage = () => {
+		if (commands) pages.push(commands);
+		commands = "0.145 0.388 0.922 rg\n0 720 612 72 re f\n";
+		commands += pdfText("IntelliHub Staff Investigation Report", 50, 752, 18, "F2", "1 1 1");
+		commands += pdfText(`Generated ${report.generatedAt}`, 50, 733, 9, "F1", "0.86 0.92 1");
+		y = 695;
+	};
+	const addLine = (text, style = "body") => {
+		const settings = { section: [12, "F2", "0.118 0.227 0.541", 22], label: [10, "F2", "0.12 0.12 0.15", 16], body: [10, "F1", "0.2 0.24 0.31", 15] }[style];
+		if (style === "section" && y < 685) y -= 7;
+		wrapPdfText(text, 85).forEach((line) => {
+			if (y < 62) startPage();
+			commands += pdfText(line, 50, y, settings[0], settings[1], settings[2]);
+			y -= settings[3];
+		});
+	};
+	startPage();
+	addLine("Workload", "section");
+	[["Cases in scope", report.cases.length], ["Open", report.openCases.length], ["Resolved", report.resolvedCases.length], ["Resolution rate", `${report.resolutionRate}%`], ["Flagged transactions", report.flagged.length]].forEach(([label, value]) => addLine(`${label}: ${value}`));
+	addLine("Staff Priority Queue", "section");
+	if (report.queue.length) report.queue.forEach((item) => addLine(`${item.id}  |  ${item.type}  |  ${item.severity} severity  |  ${item.policyCount} policies matched`));
+	else addLine("No open cases awaiting staff action.");
+	addLine("Findings", "section");
+	report.findings.forEach((item) => { addLine(item.title, "label"); addLine(item.text); });
+	addLine("Recommended Actions", "section");
+	report.actions.forEach((item, index) => addLine(`${index + 1}. ${item}`));
+	pages.push(commands);
+	const objects = [];
+	objects[1] = "<< /Type /Catalog /Pages 2 0 R >>";
+	objects[3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>";
+	objects[4] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>";
+	const pageIds = [];
+	pages.forEach((content, index) => {
+		const pageId = 5 + index * 2;
+		const contentId = pageId + 1;
+		pageIds.push(`${pageId} 0 R`);
+		objects[pageId] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${contentId} 0 R >>`;
+		objects[contentId] = `<< /Length ${content.length} >>\nstream\n${content}\nendstream`;
+	});
+	objects[2] = `<< /Type /Pages /Kids [${pageIds.join(" ")}] /Count ${pages.length} >>`;
+
+	let pdf = "%PDF-1.4\n";
+	const offsets = [0];
+	for (let id = 1; id < objects.length; id += 1) {
+		offsets[id] = pdf.length;
+		pdf += `${id} 0 obj\n${objects[id]}\nendobj\n`;
+	}
+	const xrefOffset = pdf.length;
+	pdf += `xref\n0 ${objects.length}\n0000000000 65535 f \n`;
+	for (let id = 1; id < objects.length; id += 1) pdf += `${String(offsets[id]).padStart(10, "0")} 00000 n \n`;
+	pdf += `trailer\n<< /Size ${objects.length} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+	return pdf;
+}
+
+function pdfText(text, x, y, size, font, color) {
+	return `BT /${font} ${size} Tf ${color} rg ${x} ${y} Td (${escapePdfText(text)}) Tj ET\n`;
+}
+
+function wrapPdfText(text, maxLength) {
+	const words = String(text).split(/\s+/);
+	const lines = [];
+	let line = "";
+	words.forEach((word) => {
+		if (`${line} ${word}`.trim().length > maxLength && line) { lines.push(line); line = word; }
+		else line = `${line} ${word}`.trim();
+	});
+	if (line) lines.push(line);
+	return lines;
+}
+
+function escapePdfText(text) {
+	return String(text)
+		.normalize("NFKD")
+		.replace(/[^\x20-\x7E]/g, "")
+		.replace(/([\\()])/g, "\\$1");
 }
 
 async function initPage() {
