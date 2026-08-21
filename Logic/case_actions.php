@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/retrieve_data.php';
+
 session_start();
 
 header('Content-Type: application/json');
@@ -35,9 +37,8 @@ if (!$case) {
     exit;
 }
 
-$requiredRole = $case['access_level'] ?? null;
 $userRole = $_SESSION['user']['role'] ?? '';
-if ($requiredRole !== null && strcasecmp((string) $requiredRole, (string) $userRole) !== 0) {
+if (!canAccessDocument($case, $userRole)) {
     http_response_code(403);
     echo json_encode(['error' => 'You do not have access to act on this case.']);
     exit;

@@ -46,14 +46,18 @@ function sourceToType(string $source): string
 }
 
 // Records with no access_level are visible to every authenticated role.
-// Records tagged access_level are only visible to that exact role (case-insensitive).
+// Records tagged access_level require at least that clearance — ranked so a
+const ACCESS_LEVEL_RANK = ['staff' => 1, 'manager' => 2, 'admin' => 3];
+
 function canAccessDocument(array $doc, string $role): bool
 {
     $required = $doc['access_level'] ?? null;
     if ($required === null) {
         return true;
     }
-    return strcasecmp($required, $role) === 0;
+    $requiredRank = ACCESS_LEVEL_RANK[strtolower($required)] ?? 1;
+    $roleRank = ACCESS_LEVEL_RANK[strtolower($role)] ?? 0;
+    return $roleRank >= $requiredRank;
 }
 
 function scoreDoc(array $doc, string $query, array $queryWords): int
