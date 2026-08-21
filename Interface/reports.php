@@ -18,6 +18,30 @@ include __DIR__ . '/partials/chrome_head.php';
 							</div>
 						</div>
 						<div class="stats-grid" id="reportKpis"></div>
+						<?php if ($currentRole === 'Manager'): ?>
+							<section class="manager-report-brief" id="managerReportBrief">
+								<div class="manager-report-brief-header">
+									<div>
+										<p class="manager-report-eyebrow">Management briefing</p>
+										<h2>Risk &amp; workload overview</h2>
+									</div>
+									<p id="managerBriefNote"></p>
+								</div>
+								<div class="manager-brief-metrics" id="managerBriefMetrics"></div>
+								<div class="manager-risk-register">
+										<div class="manager-risk-register-header">
+											<h3>Open high-severity cases</h3>
+											<span id="managerRiskNote"></span>
+										</div>
+									<div class="table-wrapper">
+										<table class="data-table">
+											<thead><tr><th>Case</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead>
+											<tbody id="managerRiskRegister"></tbody>
+										</table>
+									</div>
+								</div>
+							</section>
+						<?php endif; ?>
 						<div class="report-grid">
 							<div class="report-card">
 								<h3>Case Status</h3>
@@ -40,7 +64,7 @@ include __DIR__ . '/partials/chrome_head.php';
 							<div class="content-card">
 								<div class="card-header">
 									<h2>Priority Queue</h2>
-									<span class="card-header-note">Open cases, highest severity first</span>
+									<span class="card-header-note" id="reportPriorityNote">Open cases, highest severity first</span>
 								</div>
 								<div class="card-body" style="padding: 0">
 									<div class="table-wrapper">
@@ -60,7 +84,7 @@ include __DIR__ . '/partials/chrome_head.php';
 							</div>
 							<div class="content-card">
 								<div class="card-header">
-									<h2>Staff Findings</h2>
+									<h2><?= $currentRole === 'Manager' ? 'Management Findings' : 'Staff Findings' ?></h2>
 								</div>
 								<div class="card-body">
 									<div id="reportFindings"></div>
