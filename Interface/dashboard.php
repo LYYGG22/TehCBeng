@@ -21,7 +21,7 @@ include __DIR__ . '/partials/chrome_head.php';
 									<h2>Flagged Transactions</h2>
 								</div>
 								<div class="card-body">
-									<div class="table-wrapper">
+									<div class="table-wrapper flagged-transactions-scroll">
 										<table class="data-table">
 											<thead>
 												<tr>

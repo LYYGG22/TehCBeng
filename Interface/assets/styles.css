@@ -1091,7 +1091,7 @@ body {
 	align-items: center;
 	justify-content: flex-start;
 	height: var(--ih-header-h);
-	padding: 0 1.5rem;
+	padding: 0 0.5rem;
 	border-bottom: 1px solid var(--ih-border);
 	background: #ffffff;
 	flex-shrink: 0;
@@ -1099,9 +1099,9 @@ body {
 }
 
 .sidebar-logo {
-	max-height: 60px;
+	max-height: 68px;
 	width: auto;
-	max-width: 250px;
+	max-width: 244px;
 	object-fit: contain;
 }
 
