@@ -14,7 +14,7 @@ $currentRole = $_SESSION['user']['role'] ?? 'Staff';
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>IntelliHub – <?= htmlspecialchars($pageTitle) ?></title>
-		<link rel="stylesheet" href="assets/styles.css" />
+		<link rel="stylesheet" href="assets/styles.css?v=<?= filemtime(__DIR__ . '/../assets/styles.css') ?>" />
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 	</head>
 	<body>

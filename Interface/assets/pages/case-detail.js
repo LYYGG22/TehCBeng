@@ -1,3 +1,14 @@
+function getDemoCustomerName(caseId) {
+	const names = [
+		"Aina Rahman", "Daniel Lim", "Priya Nair", "Jason Tan", "Nurul Huda",
+		"Marcus Lee", "Siti Farah", "Kavin Raj", "Mei Ling Wong", "Hafiz Ismail",
+		"Chloe Ong", "Amirul Hakim", "Rina Kaur", "Ethan Goh", "Sofia Aziz",
+		"Bryan Teo", "Nadia Karim", "Kelvin Chua", "Izzati Noor", "Ryan Yap",
+	];
+	const caseNumber = Number(caseId.match(/\d+/)?.[0] || 1);
+	return names[(caseNumber - 1) % names.length];
+}
+
 function renderCaseDetail(caseId) {
 	const caseData = appData.cases.find(c => c.id === caseId);
 	if (!caseData) {
@@ -24,6 +35,26 @@ function renderCaseDetail(caseId) {
 	document.getElementById("caseDetailKeywords").innerHTML = keywords.length > 0
 		? `<div class="keywords-list">${keywords.map(kw => `<span class="keyword-tag">${escapeHtml(kw)}</span>`).join("")}</div>`
 		: `<p class="text-muted">No keywords detected</p>`;
+
+	const managerInsights = document.getElementById("managerCaseInsights");
+	if (managerInsights) {
+		const caseNumber = caseId.match(/\d+/)?.[0]?.padStart(5, "0") || "00000";
+		const caseText = `${originalMessage} ${caseData.summary || ""}`;
+		const amount = caseText.match(/\$[\d,]+/)?.[0] || "No amount recorded";
+		const accountStatus = /locked|frozen|blocked/i.test(caseText) ? "Protected / restricted" : "Review required";
+
+		document.getElementById("managerCustomerAccount").innerHTML = `
+			<div class="suggestion-item"><strong>Account number</strong>${escapeHtml(caseData.account_number || `ACC-${caseNumber}`)}</div>
+			<div class="suggestion-item"><strong>Customer name</strong>${escapeHtml(caseData.customer_name || getDemoCustomerName(caseId))}</div>
+			<div class="suggestion-item"><strong>Account status</strong>${escapeHtml(accountStatus)}</div>`;
+
+		const abnormalTransactionPanel = document.getElementById("managerAbnormalTransactionPanel");
+		abnormalTransactionPanel.hidden = caseData.severity !== "High";
+		if (caseData.severity === "High") {
+			document.getElementById("managerAbnormalTransaction").innerHTML = `
+				<div class="suggestion-item"><strong>Abnormal transaction amount</strong>${escapeHtml(amount)}</div>`;
+		}
+	}
 
 	const suggestionsText = `
 		<div class="suggestion-item">

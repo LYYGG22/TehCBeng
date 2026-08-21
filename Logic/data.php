@@ -181,6 +181,8 @@ function formatCase(array $item): array
         'id' => $caseId,
         'summary' => $text,
         'original_message' => $item['original_message'] ?? '',
+        'customer_name' => $item['customer_name'] ?? null,
+        'account_number' => $item['account_number'] ?? null,
         'status' => $status,
         'severity' => $severity,
         'type' => $type,

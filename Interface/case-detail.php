@@ -38,6 +38,24 @@ include __DIR__ . '/partials/chrome_head.php';
 									<div class="keywords-container" id="caseDetailKeywords"></div>
 								</div>
 
+								<?php if ($currentRole === 'Manager'): ?>
+									<section class="detail-section manager-case-insights" id="managerCaseInsights">
+										<div class="manager-case-insights-header">
+											<h2>Account &amp; Transaction Review</h2>
+										</div>
+										<div class="manager-case-insights-grid">
+											<div>
+												<h3>Customer Account Details</h3>
+												<div class="suggestions-box" id="managerCustomerAccount"></div>
+											</div>
+											<div id="managerAbnormalTransactionPanel" hidden>
+												<h3>Abnormal Transaction Details</h3>
+												<div class="suggestions-box" id="managerAbnormalTransaction"></div>
+											</div>
+										</div>
+									</section>
+								<?php endif; ?>
+
 								<!-- Suggestions & Conclusions -->
 								<div class="detail-section">
 									<h2>Suggestions & Conclusions</h2>

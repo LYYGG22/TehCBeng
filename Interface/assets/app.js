@@ -582,6 +582,28 @@ function renderCaseDetail(caseId) {
 		? `<div class="keywords-list">${keywords.map(kw => `<span class="keyword-tag">${escapeHtml(kw)}</span>`).join("")}</div>`
 		: `<p class="text-muted">No keywords detected</p>`;
 
+	const managerInsights = document.getElementById("managerCaseInsights");
+	const canViewManagerInsights = ["Manager", "Admin"].includes(currentUser?.role);
+	managerInsights.hidden = !canViewManagerInsights;
+	if (canViewManagerInsights) {
+		const caseNumber = caseId.match(/\d+/)?.[0]?.padStart(5, "0") || "00000";
+		const caseText = `${originalMessage} ${caseData.summary || ""}`;
+		const amount = caseText.match(/\$[\d,]+/)?.[0] || "Not stated";
+		const accountStatus = /locked|frozen|blocked/i.test(caseText) ? "Protected / restricted" : "Review required";
+		const anomalies = ["new payee", "new device", "unknown", "duplicate", "multiple", "rapid", "overseas", "blocked ip", "password", "otp", "sim swap"]
+			.filter((indicator) => caseText.toLowerCase().includes(indicator))
+			.map((indicator) => indicator.replace(/\b\w/g, (letter) => letter.toUpperCase()));
+
+		document.getElementById("managerCustomerAccount").innerHTML = `
+			<div class="suggestion-item"><strong>Customer account</strong>CUST-${caseNumber}</div>
+			<div class="suggestion-item"><strong>Account status</strong>${escapeHtml(accountStatus)}</div>
+			<div class="suggestion-item"><strong>Verification</strong>Required before account changes or fund release</div>`;
+		document.getElementById("managerAbnormalTransaction").innerHTML = `
+			<div class="suggestion-item"><strong>Amount under review</strong>${escapeHtml(amount)}</div>
+			<div class="suggestion-item"><strong>Risk severity</strong><span class="badge ${badgeClass(caseData.severity, "severity")}">${escapeHtml(caseData.severity)}</span></div>
+			<div class="suggestion-item"><strong>Detected anomalies</strong>${escapeHtml(anomalies.join(", ") || "Pattern requires manual review")}</div>`;
+	}
+
 	const suggestionsText = `
 		<div class="suggestion-item">
 			<strong>Case Type:</strong> ${escapeHtml(caseData.type)}

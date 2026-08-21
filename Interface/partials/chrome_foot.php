@@ -121,7 +121,7 @@ $pageScripts = $pageScripts ?? [];
 		<script src="assets/common.js"></script>
 		<script src="assets/shared-analytics.js"></script>
 <?php foreach ($pageScripts as $script): ?>
-		<script src="assets/<?= htmlspecialchars($script) ?>"></script>
+		<script src="assets/<?= htmlspecialchars($script) ?>?v=<?= filemtime(__DIR__ . '/../assets/' . $script) ?>"></script>
 <?php endforeach; ?>
 	</body>
 </html>
