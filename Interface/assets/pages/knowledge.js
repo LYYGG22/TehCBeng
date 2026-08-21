@@ -39,6 +39,7 @@ function renderSearchResultMeta(result) {
 	if (result.type === "Transaction") {
 		return `
 			<span class="badge ${badgeClass(result.risk, "risk")}">${escapeHtml(result.risk)} Risk</span>
+			<span class="badge ${result.flagged ? "badge-flagged" : "badge-clear"}">${result.flagged ? "Flagged" : "Unflagged"}</span>
 			<span class="result-meta-label">$${escapeHtml(String(result.amount))}</span>`;
 	}
 	if (result.type === "Policy") {

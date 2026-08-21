@@ -25,9 +25,9 @@
     },
     {
         "id": "TX006",
-        "text": "Transaction TX006: amount $180, time 2026-08-19 16:40, location Unknown sender transfer, flagged true",
+        "text": "Transaction TX006: amount $180, time 2026-08-19 16:40, location Unknown sender transfer, flagged false",
         "risk_level": "Medium",
-        "flagged_by": "Manual"
+        "flagged_by": null
     },
     {
         "id": "TX007",
