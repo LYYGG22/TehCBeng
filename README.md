@@ -25,9 +25,9 @@ Then set up the chatbot's API key:
 cp .env.example .env
 ```
 
-That's it — `.env.example` has a working OpenRouter key pre-filled for judging/evaluation, so the chatbot works immediately with no account needed. **This key is disposable and will be revoked after the competition** — if you're using this project past judging, replace it in `.env` with your own key from [openrouter.ai](https://openrouter.ai/settings/integrations).
+**Why this step is needed:** `.env` is the file the app actually reads, but it's gitignored on purpose so a real secret key never gets committed to the repo — so a fresh clone never has one, even though it has `.env.example`. This command just creates your local `.env` from that template. Skip it and the chatbot will show `OPENROUTER_API_KEY is not set`.
 
-`.env` itself is gitignored and never committed — the working key only lives in `.env.example` for this submission. Without a key set, the chatbot endpoint returns a clear error instead of failing silently.
+`.env.example` has a working OpenRouter key pre-filled for judging/evaluation, so the chatbot works immediately with no account needed. **This key is disposable and will be revoked after the competition** — if you're using this project past judging, replace it in `.env` with your own key from [openrouter.ai](https://openrouter.ai/settings/integrations).
 
 The database is **created automatically** on first request — `Logic/db.php` builds a SQLite file at `Data/app.db`, creates the schema, and seeds it from the JSON files in `Data/`. There is no separate migration step.
 
