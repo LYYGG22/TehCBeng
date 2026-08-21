@@ -1,9 +1,4 @@
 <?php
-/**
- * Shared PDO connection to a local SQLite file.
- * Creates schema and seeds demo data matching the fraud case management spec.
- */
-
 function getDB() {
     static $db;
     if ($db) return $db;

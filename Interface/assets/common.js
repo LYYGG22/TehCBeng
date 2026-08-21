@@ -86,7 +86,7 @@ function canManageTransactionFlags() {
 
 // Posts the flag toggle and refreshes the shared `appData`. Callers are
 // responsible for re-rendering whatever's actually on their page afterward —
-// unlike the pre-split version, no page has every view mounted at once.
+// no page has every view mounted at once.
 async function toggleTransactionFlag(id) {
 	const response = await fetch(`${API_BASE}/data.php?action=toggle_transaction_flag`, {
 		method: "POST",
