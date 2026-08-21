@@ -21,7 +21,7 @@ $currentRole = $_SESSION['user']['role'] ?? 'Staff';
 		<div class="app-layout">
 			<aside class="sidebar">
 				<div class="sidebar-brand">
-					<span class="sidebar-brand-text">IntelliHub</span>
+					<img src="assets/logo.png?v=20260821" alt="IntelliHub" class="sidebar-logo" />
 				</div>
 
 				<nav class="sidebar-nav">
