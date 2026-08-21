@@ -45,7 +45,8 @@ body {
 
 .login-page {
 	display: flex;
-	min-height: 100vh;
+	height: 100dvh;
+	overflow: hidden;
 }
 
 .login-brand {
@@ -55,7 +56,8 @@ body {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	padding: 3rem;
+	align-items: center;
+	padding: clamp(2.5rem, 8vh, 5rem) 3rem 3rem;
 	position: relative;
 	overflow: hidden;
 }
@@ -72,19 +74,21 @@ body {
 .brand-content {
 	position: relative;
 	z-index: 1;
+	width: min(100%, 420px);
 	max-width: 420px;
+	transform: translateY(-1rem);
 }
 
 .brand-logo {
 	display: flex;
 	align-items: center;
-	margin-bottom: 2rem;
+	margin-bottom: 0.75rem;
 }
 
 .brand-logo-wrap {
 	display: block;
 	background: #0a0a0a00;
-	padding: 1rem 1.25rem;
+	padding: 0;
 	border-radius: var(--ih-radius-sm);
 	margin-bottom: 0;
 }
@@ -116,7 +120,7 @@ body {
 .brand-tagline {
 	font-size: 1.125rem;
 	opacity: 0.9;
-	margin-bottom: 2.5rem;
+	margin-bottom: 1.75rem;
 	line-height: 1.6;
 }
 
@@ -297,6 +301,175 @@ body {
 	text-align: center;
 	font-size: 0.8125rem;
 	color: var(--ih-muted);
+}
+
+/* Enhanced sign-in experience */
+.login-brand {
+	background: linear-gradient(145deg, #0f2a65 0%, #123a8b 58%, #2563eb 100%);
+}
+
+.brand-eyebrow {
+	margin: 0 0 1.25rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: #bfdbfe;
+}
+
+.brand-assurance {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.625rem;
+	margin-top: 2.5rem;
+}
+
+.brand-assurance span {
+	padding: 0.5rem 0.75rem;
+	border: 1px solid rgba(191, 219, 254, 0.35);
+	border-radius: 999px;
+	background: rgba(15, 23, 42, 0.16);
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+
+.login-form-panel {
+	background: #f8fafc;
+}
+
+.login-card {
+	padding: 2.25rem;
+	background: var(--ih-surface);
+	border: 1px solid #e2e8f0;
+	border-radius: 1rem;
+	box-shadow: 0 20px 45px rgba(15, 23, 42, 0.1);
+}
+
+.login-card-logo-wrap {
+	padding: 0;
+	margin-bottom: 1.75rem;
+}
+
+.login-card h1 {
+	font-size: 1.75rem;
+}
+
+.login-subtitle {
+	margin-bottom: 2.25rem;
+}
+
+.form-group input {
+	background: #f8fafc;
+}
+
+.demo-access {
+	margin-top: 1.75rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid #e2e8f0;
+}
+
+.demo-access > p {
+	margin: 0 0 0.75rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--ih-muted);
+}
+
+.demo-access-options {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.75rem;
+}
+
+.demo-access-option {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	padding: 0.75rem;
+	text-align: left;
+	background: #f8fafc;
+	border: 1px solid #dbeafe;
+	border-radius: var(--ih-radius-sm);
+	color: var(--ih-text);
+	cursor: pointer;
+	transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.demo-access-option:hover,
+.demo-access-option:focus-visible {
+	border-color: var(--ih-accent);
+	background: #eff6ff;
+	outline: none;
+	transform: translateY(-1px);
+}
+
+.demo-access-option strong {
+	font-size: 0.8125rem;
+}
+
+.demo-access-option span {
+	font-size: 0.6875rem;
+	color: var(--ih-muted);
+}
+
+/* Keep the complete login workflow within one viewport. */
+.login-card {
+	padding: 1.75rem 2rem;
+}
+
+.login-card-logo-wrap {
+	margin-bottom: 1.25rem;
+}
+
+.login-card h1 {
+	font-size: 1.625rem;
+}
+
+.login-subtitle {
+	margin-bottom: 1.5rem;
+}
+
+.demo-access {
+	margin-top: 1.25rem;
+	padding-top: 1rem;
+}
+
+.login-footer {
+	margin-top: 1rem;
+}
+
+@media (max-height: 700px) {
+	.login-form-panel {
+		padding: 1rem;
+	}
+
+	.login-card {
+		padding: 1.25rem 1.5rem;
+	}
+
+	.login-card-logo {
+		max-width: 180px;
+	}
+
+	.login-card-logo-wrap,
+	.login-subtitle {
+		margin-bottom: 1rem;
+	}
+
+	.form-group {
+		margin-bottom: 0.875rem;
+	}
+
+	.form-row {
+		margin-bottom: 1rem;
+	}
+
+	.demo-access {
+		margin-top: 1rem;
+		padding-top: 0.75rem;
+	}
 }
 
 /* ── Chat Page ── */
